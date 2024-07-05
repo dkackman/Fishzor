@@ -1,26 +1,50 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
+@using Fishzor.Client.Components
 
 <PageTitle>Fishy fishy fish</PageTitle>
 
-<p role="status">Current count: @_fish.Count</p>
+<p role="status">Current count: @_fishComponents.Count</p>
 
 <button class="btn btn-primary" @onclick="AddFish">Add fish</button>
-<button class="btn btn-primary" @onclick="RemoveFish" disabled="@(_fish.Count == 0)">Remove fish</button>
+<button class="btn btn-primary" @onclick="RemoveFish" disabled="@(_fishComponents.Count == 0)">Remove fish</button>
+
+@foreach (var fish in _fishComponents)
+{
+    @fish
+}
 
 @code {
-    private readonly List<object> _fish = new();
+    private List<RenderFragment> _fishComponents = new();
+    private Random _random = new();
 
     private void AddFish()
     {
-        _fish.Add(new object());
+        var left = _random.Next(0, 90); // Random left position from 0 to 90%
+        var top = _random.Next(0, 90); // Random top position from 0 to 90%
+
+        // Create a new RenderFragment representing the Fish component
+        // and position it randomly using style
+        var fishComponent = new RenderFragment(builder =>
+        {
+            var seq = 0;
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "style", $"position: absolute; left: {left}%; top: {top}%;");
+            builder.OpenComponent<Fish>(seq++);
+            builder.CloseComponent();
+            builder.CloseElement();
+        });
+
+        _fishComponents.Add(fishComponent);
     }
 
     private void RemoveFish()
     {
-        if (_fish.Count > 0)
+        if (_fishComponents.Count > 0)
         {
-            _fish.RemoveAt(0);
+            _fishComponents.RemoveAt(_fishComponents.Count - 1);
         }
     }
+
+
 }
