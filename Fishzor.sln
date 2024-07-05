@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fishzor", "Fishzor\Fishzor\Fishzor.csproj", "{71DCE30F-2E22-4080-8951-5103668BECD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fishzor.Client", "Fishzor\Fishzor.Client\Fishzor.Client.csproj", "{DEDB04BB-8FF3-4311-B772-CBCE715ECBB5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{71DCE30F-2E22-4080-8951-5103668BECD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71DCE30F-2E22-4080-8951-5103668BECD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71DCE30F-2E22-4080-8951-5103668BECD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71DCE30F-2E22-4080-8951-5103668BECD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEDB04BB-8FF3-4311-B772-CBCE715ECBB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEDB04BB-8FF3-4311-B772-CBCE715ECBB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEDB04BB-8FF3-4311-B772-CBCE715ECBB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEDB04BB-8FF3-4311-B772-CBCE715ECBB5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D5EF94EB-E60E-46BF-B4A9-804166867F4D}
+	EndGlobalSection
+EndGlobal

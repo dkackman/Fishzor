@@ -1,0 +1,26 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Fishy fishy fish</PageTitle>
+
+<p role="status">Current count: @_fish.Count</p>
+
+<button class="btn btn-primary" @onclick="AddFish">Add fish</button>
+<button class="btn btn-primary" @onclick="RemoveFish" disabled="@(_fish.Count == 0)">Remove fish</button>
+
+@code {
+    private readonly List<object> _fish = new();
+
+    private void AddFish()
+    {
+        _fish.Add(new object());
+    }
+
+    private void RemoveFish()
+    {
+        if (_fish.Count > 0)
+        {
+            _fish.RemoveAt(0);
+        }
+    }
+}
