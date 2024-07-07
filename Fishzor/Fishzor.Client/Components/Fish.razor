@@ -38,8 +38,12 @@
 
     private async Task UpdatePositionInPixels()
     {
-        var rect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
-        Position = new Point(rect.Left, rect.Top);
+        // place the new fish at a random point within the tank
+        var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
+        var left = (tankRect.Width - 100.0) * _random.NextDouble();
+        var top = (tankRect.Height - 100.0) * _random.NextDouble();
+
+        Position = new Point(left, top);
     }
 
     protected override void OnInitialized()
