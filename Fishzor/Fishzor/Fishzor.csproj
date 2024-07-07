@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Fishzor.Client\Fishzor.Client.csproj" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
   </ItemGroup>
 
