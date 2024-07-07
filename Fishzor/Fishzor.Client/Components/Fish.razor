@@ -1,29 +1,132 @@
-﻿<img src="@GetFishImagePath()" alt="@Color" style="@($"transform: scale({Scale});")" />
+﻿@implements IDisposable
+@using System.Timers
+@using Microsoft.JSInterop
+@using System.Diagnostics
+@using Fishzor.Client.Components
+@using global::Fishzor.Client.Components
+@inject IJSRuntime JSRuntime
+
+<div @ref="fishElement"
+    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")">
+    <img src="@FishImagePath" alt="@Color" />
+</div>
 
 @code {
     public FishColor Color { get; set; } = FishColor.Orange;
     public string Scale { get; set; } = "100.0";
-    public string FrameDuration { get; set; } = "100";
-    public Direction Direction { get; set; } = Direction.Left;
+    public string FrameDuration { get; set; } = "100"; // used to find the correct file name
+    public Direction Direction => FishVelocity.dx > 0 ? Direction.Right : Direction.Left;
+    public string FishImagePath => $"fish/{Color}/{Direction}-{FrameDuration}.png";
+
+    private ElementReference fishElement;
+    private readonly Timer _movementTimer = new(50);
+    private Point Position = new();
+    private Velocity FishVelocity = new();
+
+    private static readonly Random _random = new Random();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UpdatePositionInPixels();
+        }
+    }
+
+    private async Task UpdatePositionInPixels()
+    {
+        var rect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
+        Position = new Point(rect.Left, rect.Top);
+    }
 
     protected override void OnInitialized()
     {
-        var random = new Random();
-        Color = GetRandomColor(random);
-        var scaleValue = random.NextDouble() * (1.00 - 0.5) + 0.5; 
-        Scale = scaleValue.ToString("0.##"); 
-        Direction = random.Next(0, 2) == 0 ? Direction.Left : Direction.Right;
+        // randomize the fish state
+        var colors = Enum.GetValues(typeof(FishColor));
+        Color = (FishColor)(colors.GetValue(_random.Next(colors.Length)) ?? FishColor.Orange);
+        var scaleValue = _random.NextDouble() * (1.00 - 0.5) + 0.5;
+        Scale = scaleValue.ToString("0.##");
+
+        var direction = _random.Next(0, 2) == 0 ? -1 : 1;
+        FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
+
+        _movementTimer.Elapsed += async (sender, e) => await MoveFishAsync();
+        _movementTimer.AutoReset = true;
+        _movementTimer.Enabled = true;
     }
 
-    private string GetFishImagePath()
+    private async Task MoveFishAsync()
     {
-        return $"fish/{Color}/{Direction}-{FrameDuration}.gif";
+        var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
+        var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
+
+        var currentPostion = new Point(fishRect.Left, fishRect.Top);
+        var nextPosition = currentPostion + FishVelocity;
+        var p = Position;
+
+        if (nextPosition.Top <= tankRect.Top)
+        {
+            FishVelocity.dy = Math.Abs(FishVelocity.dy);
+        }
+        else if (nextPosition.Top >= tankRect.Bottom)
+        {
+            FishVelocity.dy = -Math.Abs(FishVelocity.dy);
+        }
+
+        if (nextPosition.Left <= tankRect.Left)
+        {
+            FishVelocity.dx = Math.Abs(FishVelocity.dx);
+        }
+        else if (nextPosition.Left + 144 >= tankRect.Right)
+        {
+            FishVelocity.dx = -Math.Abs(FishVelocity.dx);
+        }
+
+        // Update the position with the potentially modified velocity
+        Position = Position + FishVelocity;
+
+        await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
     }
 
-    public FishColor GetRandomColor(Random random)
+    public void Dispose()
     {
-        var values = Enum.GetValues(typeof(FishColor));
-        var randomIndex = random.Next(values.Length);
-        return (FishColor)(values.GetValue(randomIndex) ?? FishColor.Orange);
+        _movementTimer?.Dispose();
+    }
+
+    private readonly struct Point
+    {
+        public double Left { get; }
+        public double Top { get; }
+        public Point(double left, double top)
+        {
+            Left = left;
+            Top = top;
+        }
+        public override string ToString() => $"[Left: {Left}, Top: {Top}]";
+
+        // Operator overload to add Velocity to a Point
+        public static Point operator +(Point point, Velocity velocity) => new Point(point.Left + velocity.dx, point.Top +
+        velocity.dy);
+    }
+
+    private struct Size
+    {
+        public int Height { get; set; }
+        public int Width { get; set; }
+
+        public override string ToString() => $"[Height: {Height}, Width: {Width}]";
+    }
+
+    private struct Velocity
+    {
+        public Velocity(double dx, double dy)
+        {
+            this.dx = dx;
+            this.dy = dy;
+        }
+        public double dx { get; set; }
+        public double dy { get; set; }
+
+        public override string ToString() => $"[dx: {dx}, dy: {dy}]";
     }
 }
