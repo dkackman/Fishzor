@@ -14,8 +14,8 @@
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
 
-    <button class="btn btn-primary" @onclick="AddFish">Add fish</button>
-    <button class="btn btn-primary" @onclick="RemoveFish" disabled="@(_fishComponents.Count == 0)">Remove fish</button>
+    <button type="button"  class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
+    <button type="button"  class="btn btn-primary btn-sm" @onclick="RemoveFish" disabled="@(_fishComponents.Count == 0)">Remove fish</button>
     @foreach (var fish in _fishComponents)
     {
         @fish
@@ -24,7 +24,6 @@
 
 @code {
     private List<RenderFragment> _fishComponents = new();
-    private static readonly Random _random = new();
 
     private void AddFish()
     {
