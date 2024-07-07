@@ -19,7 +19,7 @@
     public string FishImagePath => $"fish/{Color}/{Direction}-{FrameDuration}.png";
 
     private ElementReference fishElement;
-    private readonly Timer _movementTimer = new(50);
+    private readonly Timer _animationTimer = new(50);
     private Point Position = new();
     private Velocity FishVelocity = new();
 
@@ -40,8 +40,9 @@
             Position = new Point(left, top);
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
 
-            _movementTimer.AutoReset = true;
-            _movementTimer.Enabled = true;
+            // now turn on the timer that drives the animation
+            _animationTimer.AutoReset = true;
+            _animationTimer.Enabled = true;
         }
     }
 
@@ -56,7 +57,7 @@
         var direction = _random.Next(0, 2) == 0 ? -1 : 1;
         FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
 
-        _movementTimer.Elapsed += async (sender, e) => await MoveFishAsync();
+        _animationTimer.Elapsed += async (sender, e) => await MoveFishAsync();
     }
 
     private async Task MoveFishAsync()
@@ -66,7 +67,7 @@
 
         var currentPostion = new Point(fishRect.Left, fishRect.Top);
         var nextPosition = currentPostion + FishVelocity;
-        var p = Position;
+
         if (nextPosition.Top <= tankRect.Top)
         {
             FishVelocity.dy = Math.Abs(FishVelocity.dy);
@@ -91,39 +92,5 @@
         await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
     }
 
-    public void Dispose()
-    {
-        _movementTimer?.Dispose();
-    }
-
-    private readonly struct Point
-    {
-        public double Left { get; }
-        public double Top { get; }
-        public Point(double left, double top)
-        {
-            Left = left;
-            Top = top;
-        }
-        public override string ToString() => $"[Left: {Left}, Top: {Top}]";
-
-        // Operator overload to add Velocity to a Point
-        public static Point operator +(Point point, Velocity velocity)
-        {
-            return new Point(point.Left + velocity.dx, point.Top + velocity.dy);
-        }
-    }
-
-    private struct Velocity
-    {
-        public Velocity(double dx, double dy)
-        {
-            this.dx = dx;
-            this.dy = dy;
-        }
-        public double dx { get; set; }
-        public double dy { get; set; }
-
-        public override string ToString() => $"[dx: {dx}, dy: {dy}]";
-    }
+    public void Dispose() => _animationTimer?.Dispose();
 }
