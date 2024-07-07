@@ -32,18 +32,17 @@
     {
         if (firstRender)
         {
-            await UpdatePositionInPixels();
+            // place the new fish at a random point within the tank
+            var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
+            var left = (tankRect.Width - 100.0) * _random.NextDouble();
+            var top = (tankRect.Height - 100.0) * _random.NextDouble();
+
+            Position = new Point(left, top);
+            await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
+
+            _movementTimer.AutoReset = true;
+            _movementTimer.Enabled = true;
         }
-    }
-
-    private async Task UpdatePositionInPixels()
-    {
-        // place the new fish at a random point within the tank
-        var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-        var left = (tankRect.Width - 100.0) * _random.NextDouble();
-        var top = (tankRect.Height - 100.0) * _random.NextDouble();
-
-        Position = new Point(left, top);
     }
 
     protected override void OnInitialized()
@@ -58,8 +57,6 @@
         FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
 
         _movementTimer.Elapsed += async (sender, e) => await MoveFishAsync();
-        _movementTimer.AutoReset = true;
-        _movementTimer.Enabled = true;
     }
 
     private async Task MoveFishAsync()
