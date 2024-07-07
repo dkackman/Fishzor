@@ -7,9 +7,48 @@
 @inject IJSRuntime JSRuntime
 
 <div @ref="fishElement"
-    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")">
+     style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")">
     <img src="@FishImagePath" alt="@Color" />
 </div>
+<script>
+    function makeDraggable(element, dotNetRef) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+        element.onmousedown = function dragMouseDown(e) {
+            dotNetRef.invokeMethodAsync('OnDraggingStart')
+            e = e || window.event;
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // calculate the new cursor position:
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            // set the element's new position:
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            /* stop moving when mouse button is released:*/
+            document.onmouseup = null;
+            document.onmousemove = null;
+
+            // let the c# know the new position
+            dotNetRef.invokeMethodAsync('OnDraggingComplete', parseInt(element.style.left, 10), parseInt(element.style.top, 10));
+        }
+    }
+</script>
 
 @code {
     public FishColor Color { get; set; } = FishColor.Orange;
@@ -25,8 +64,30 @@
 
     private static readonly Random _random = new Random();
 
+    // the size of the fish image
     private const int HEIGHT = 84;
     private const int WIDTH = 144;
+
+    [JSInvokable]
+    public async Task OnDraggingStart()
+    {
+        _animationTimer.Enabled = false;
+        await Task.CompletedTask;
+    }
+
+
+    [JSInvokable]
+    public async Task OnDraggingComplete(double left, double top)
+    {
+        Position = new Point(left, top);
+
+        // choose a new velocity and change direction
+        var direction = FishVelocity.dx > 0 ? -1 : 1;
+        FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
+
+        _animationTimer.Enabled = true;
+        await Task.CompletedTask;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -39,6 +100,9 @@
 
             Position = new Point(left, top);
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
+
+            var dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, dotNetRef);
 
             // now turn on the timer that drives the animation
             _animationTimer.AutoReset = true;
