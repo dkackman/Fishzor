@@ -25,6 +25,9 @@
 
     private static readonly Random _random = new Random();
 
+    private const int HEIGHT = 84;
+    private const int WIDTH = 144;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -63,12 +66,11 @@
         var currentPostion = new Point(fishRect.Left, fishRect.Top);
         var nextPosition = currentPostion + FishVelocity;
         var p = Position;
-
         if (nextPosition.Top <= tankRect.Top)
         {
             FishVelocity.dy = Math.Abs(FishVelocity.dy);
         }
-        else if (nextPosition.Top >= tankRect.Bottom)
+        else if (nextPosition.Top + HEIGHT >= tankRect.Bottom)
         {
             FishVelocity.dy = -Math.Abs(FishVelocity.dy);
         }
@@ -77,7 +79,7 @@
         {
             FishVelocity.dx = Math.Abs(FishVelocity.dx);
         }
-        else if (nextPosition.Left + 144 >= tankRect.Right)
+        else if (nextPosition.Left + WIDTH >= tankRect.Right)
         {
             FishVelocity.dx = -Math.Abs(FishVelocity.dx);
         }
@@ -105,16 +107,10 @@
         public override string ToString() => $"[Left: {Left}, Top: {Top}]";
 
         // Operator overload to add Velocity to a Point
-        public static Point operator +(Point point, Velocity velocity) => new Point(point.Left + velocity.dx, point.Top +
-        velocity.dy);
-    }
-
-    private struct Size
-    {
-        public int Height { get; set; }
-        public int Width { get; set; }
-
-        public override string ToString() => $"[Height: {Height}, Width: {Width}]";
+        public static Point operator +(Point point, Velocity velocity)
+        {
+            return new Point(point.Left + velocity.dx, point.Top + velocity.dy);
+        }
     }
 
     private struct Velocity

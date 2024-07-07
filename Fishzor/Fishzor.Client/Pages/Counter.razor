@@ -30,8 +30,8 @@
     {
         // place the new fish at a random point within the tank
         var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-        var left = tankRect.Width * _random.NextDouble();
-        var top = tankRect.Height * _random.NextDouble();
+        var left = (tankRect.Width - 100.0) * _random.NextDouble();
+        var top = (tankRect.Height - 100.0) * _random.NextDouble();
 
         // Create a new RenderFragment representing the Fish component
         // and position it using style
