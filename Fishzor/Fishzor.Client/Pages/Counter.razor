@@ -29,7 +29,7 @@
     {
         // Create a new RenderFragment representing the Fish component
         // and position it using style
-        var fishComponent = new RenderFragment(builder =>
+        var fishFragment = new RenderFragment(builder =>
         {
             var seq = 0;
             builder.OpenElement(seq++, "div");
@@ -38,7 +38,7 @@
             builder.CloseElement();
         });
 
-        _fishComponents.Add(fishComponent);
+        _fishComponents.Add(fishFragment);
     }
 
     private void RemoveFish()
