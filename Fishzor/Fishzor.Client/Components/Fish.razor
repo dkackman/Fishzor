@@ -7,7 +7,7 @@
 @inject IJSRuntime JSRuntime
 
 <div @ref="fishElement"
-     style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")">
+    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")">
     <img src="@FishImagePath" alt="@Color" />
 </div>
 <script>
@@ -57,6 +57,7 @@
     public Direction Direction => FishVelocity.dx > 0 ? Direction.Right : Direction.Left;
     public string FishImagePath => $"fish/{Color}/{Direction}-{FrameDuration}.png";
 
+    private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
     private readonly Timer _animationTimer = new(50);
     private Point Position = new();
@@ -104,8 +105,8 @@
             Position = new Point(left, top);
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
 
-            var dotNetRef = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, dotNetRef);
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
 
             // now turn on the timer that drives the animation
             _animationTimer.AutoReset = true;
@@ -131,7 +132,7 @@
     {
         var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
         // random chance to change direction and speed
-        if (_random.Next(0, 400) < 1) 
+        if (_random.Next(0, 400) < 1)
         {
             NewVelocity();
         }
@@ -168,5 +169,9 @@
         await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
     }
 
-    public void Dispose() => _animationTimer?.Dispose();
+    public void Dispose()
+    {
+        _animationTimer?.Dispose();
+        _dotNetRef?.Dispose();
+    }
 }
