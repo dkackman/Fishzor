@@ -5,10 +5,9 @@
 @using Fishzor.Client.Components
 @inject IJSRuntime JSRuntime
 
-<div @ref="fishElement"
-    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")">
-    <img src="@FishImagePath" alt="@Color" />
-</div>
+<img src="@FishImagePath" alt="@Color" @ref="fishElement"
+    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")" />
+
 <script>
     function makeDraggable(element, dotNetRef) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -52,7 +51,21 @@
 @code {
     public FishColor Color { get; set; } = FishColor.Orange;
     public string Scale { get; set; } = "100.0";
-    public string FrameDuration { get; set; } = "100"; // used to find the correct file name
+    public string FrameDuration
+    {
+        get
+        {
+            if (FishVelocity.dx > 3.0)
+            {
+                return "66";
+            }
+            if (FishVelocity.dx > 2.25)
+            {
+                return "75";
+            }
+            return "100";
+        }
+    }
     public Direction Direction => FishVelocity.dx > 0 ? Direction.Right : Direction.Left;
     public string FishImagePath => $"fish/{Color}/{Direction}-{FrameDuration}.png";
 
