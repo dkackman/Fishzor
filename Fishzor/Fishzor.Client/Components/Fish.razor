@@ -58,10 +58,12 @@
 
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
-    private readonly Timer _animationTimer = new(50);
     private Point Position = new();
     private Velocity FishVelocity = new();
+    private bool _animate = false; // used to suppress animation at startup and during dragging 
 
+    // a single timer drives the animation for all fish
+    private static readonly Timer _animationTimer = new(50) { AutoReset = true, Enabled = false };
     private static readonly Random _random = new Random();
 
     // the size of the fish image
@@ -71,17 +73,16 @@
     [JSInvokable]
     public async Task OnDraggingStart()
     {
-        _animationTimer.Enabled = false;
+        _animate = false;
         await Task.CompletedTask;
     }
-
 
     [JSInvokable]
     public async Task OnDraggingComplete(double left, double top)
     {
         Position = new Point(left, top);
         NewVelocity();
-        _animationTimer.Enabled = true;
+        _animate = true;
         await Task.CompletedTask;
     }
 
@@ -98,8 +99,10 @@
         {
             // place the new fish at a random point within the tank
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-            var left = (tankRect.Width - 100.0) * _random.NextDouble();
-            var top = (tankRect.Height - 100.0) * _random.NextDouble();
+
+            // the 50 is buffer to keep the fish from being placed too close to the edge
+            var left = (tankRect.Width - 50.0) * _random.NextDouble();
+            var top = (tankRect.Height - 50.0) * _random.NextDouble();
 
             Position = new Point(left, top);
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
@@ -107,9 +110,13 @@
             _dotNetRef = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
 
-            // now turn on the timer that drives the animation
-            _animationTimer.AutoReset = true;
-            _animationTimer.Enabled = true;
+            // now turn on the static timer that drives the animation
+            // if it's not already running
+            if (!_animationTimer.Enabled)
+            {
+                _animationTimer.Enabled = true;
+            }
+            _animate = true;
         }
     }
 
@@ -124,49 +131,56 @@
         var direction = _random.Next(0, 2) == 0 ? -1 : 1;
         FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
 
-        _animationTimer.Elapsed += async (sender, e) => await MoveFishAsync();
+        _animationTimer.Elapsed += OnTimerElapsedAsync;
     }
+
+    // we need this a static member instead of a lambda to avoid a memory leak when the timer is disposed
+    private async void OnTimerElapsedAsync(object? sender, ElapsedEventArgs e) => await MoveFishAsync();
 
     private async Task MoveFishAsync()
     {
-        // random chance to change direction and speed
-        if (_random.Next(0, 400) < 1)
+        if (_animate)
         {
-            NewVelocity();
-        }
+            // random chance to change direction and speed
+            if (_random.Next(0, 400) < 1)
+            {
+                NewVelocity();
+            }
 
-        var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-        var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
-        var currentPostion = new Point(fishRect.Left, fishRect.Top);
-        var nextPosition = currentPostion + FishVelocity;
+            var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
+            var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
+            var currentPostion = new Point(fishRect.Left, fishRect.Top);
+            var nextPosition = currentPostion + FishVelocity;
 
-        if (nextPosition.Top <= tankRect.Top)
-        {
-            FishVelocity.dy = Math.Abs(FishVelocity.dy);
-        }
-        else if (nextPosition.Top + HEIGHT >= tankRect.Bottom)
-        {
-            FishVelocity.dy = -Math.Abs(FishVelocity.dy);
-        }
+            if (nextPosition.Top <= tankRect.Top)
+            {
+                FishVelocity.dy = Math.Abs(FishVelocity.dy);
+            }
+            else if (nextPosition.Top + HEIGHT >= tankRect.Bottom)
+            {
+                FishVelocity.dy = -Math.Abs(FishVelocity.dy);
+            }
 
-        if (nextPosition.Left <= tankRect.Left)
-        {
-            FishVelocity.dx = Math.Abs(FishVelocity.dx);
-        }
-        else if (nextPosition.Left + WIDTH >= tankRect.Right)
-        {
-            FishVelocity.dx = -Math.Abs(FishVelocity.dx);
-        }
+            if (nextPosition.Left <= tankRect.Left)
+            {
+                FishVelocity.dx = Math.Abs(FishVelocity.dx);
+            }
+            else if (nextPosition.Left + WIDTH >= tankRect.Right)
+            {
+                FishVelocity.dx = -Math.Abs(FishVelocity.dx);
+            }
 
-        // Update the position with the potentially modified velocity
-        Position = Position + FishVelocity;
+            // Update the position with the potentially modified velocity
+            Position = Position + FishVelocity;
 
-        await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
+            await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
+        }
     }
 
     public void Dispose()
     {
-        _animationTimer?.Dispose();
+        _animate = false;
+        _animationTimer.Elapsed -= OnTimerElapsedAsync;
         _dotNetRef?.Dispose();
     }
 }
