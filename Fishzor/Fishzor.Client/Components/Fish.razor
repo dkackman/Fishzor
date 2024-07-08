@@ -166,24 +166,24 @@
 
             if (nextPosition.Top <= tankRect.Top)
             {
-                FishVelocity.dy = Math.Abs(FishVelocity.dy);
+                FishVelocity = new Velocity(FishVelocity.dx, Math.Abs(FishVelocity.dy));
             }
             else if (nextPosition.Top + HEIGHT >= tankRect.Bottom)
             {
-                FishVelocity.dy = -Math.Abs(FishVelocity.dy);
+                FishVelocity = new Velocity(FishVelocity.dx, -Math.Abs(FishVelocity.dy));
             }
 
             if (nextPosition.Left <= tankRect.Left)
             {
-                FishVelocity.dx = Math.Abs(FishVelocity.dx);
+                FishVelocity = new Velocity(Math.Abs(FishVelocity.dx), FishVelocity.dy);
             }
             else if (nextPosition.Left + WIDTH >= tankRect.Right)
             {
-                FishVelocity.dx = -Math.Abs(FishVelocity.dx);
+                FishVelocity = new Velocity(-Math.Abs(FishVelocity.dx), FishVelocity.dy);
             }
 
             // Update the position with the potentially modified velocity
-            Position = Position + FishVelocity;
+            Position += FishVelocity;
 
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
         }
