@@ -80,13 +80,16 @@
     public async Task OnDraggingComplete(double left, double top)
     {
         Position = new Point(left, top);
+        NewVelocity();
+        _animationTimer.Enabled = true;
+        await Task.CompletedTask;
+    }
 
+    private void NewVelocity()
+    {
         // choose a new velocity and change direction
         var direction = FishVelocity.dx > 0 ? -1 : 1;
         FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
-
-        _animationTimer.Enabled = true;
-        await Task.CompletedTask;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -127,31 +130,40 @@
     private async Task MoveFishAsync()
     {
         var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-        var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
-
-        var currentPostion = new Point(fishRect.Left, fishRect.Top);
-        var nextPosition = currentPostion + FishVelocity;
-
-        if (nextPosition.Top <= tankRect.Top)
+        // random chance to change direction and speed
+        if (_random.Next(0, 400) < 1) 
         {
-            FishVelocity.dy = Math.Abs(FishVelocity.dy);
+            NewVelocity();
         }
-        else if (nextPosition.Top + HEIGHT >= tankRect.Bottom)
+        else
         {
-            FishVelocity.dy = -Math.Abs(FishVelocity.dy);
-        }
+            var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
 
-        if (nextPosition.Left <= tankRect.Left)
-        {
-            FishVelocity.dx = Math.Abs(FishVelocity.dx);
-        }
-        else if (nextPosition.Left + WIDTH >= tankRect.Right)
-        {
-            FishVelocity.dx = -Math.Abs(FishVelocity.dx);
-        }
+            var currentPostion = new Point(fishRect.Left, fishRect.Top);
+            var nextPosition = currentPostion + FishVelocity;
 
-        // Update the position with the potentially modified velocity
-        Position = Position + FishVelocity;
+            if (nextPosition.Top <= tankRect.Top)
+            {
+                FishVelocity.dy = Math.Abs(FishVelocity.dy);
+            }
+            else if (nextPosition.Top + HEIGHT >= tankRect.Bottom)
+            {
+                FishVelocity.dy = -Math.Abs(FishVelocity.dy);
+            }
+
+            if (nextPosition.Left <= tankRect.Left)
+            {
+                FishVelocity.dx = Math.Abs(FishVelocity.dx);
+            }
+            else if (nextPosition.Left + WIDTH >= tankRect.Right)
+            {
+                FishVelocity.dx = -Math.Abs(FishVelocity.dx);
+            }
+
+            // Update the position with the potentially modified velocity
+            Position = Position + FishVelocity;
+
+        }
 
         await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
     }
