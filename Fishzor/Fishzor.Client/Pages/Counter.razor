@@ -8,17 +8,19 @@
     #fishTank {
         width: 100%;
         height: 100%;
+        position: relative;
     }
 </style>
 
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
 
-    <button type="button"  class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
-    <button type="button"  class="btn btn-primary btn-sm" @onclick="RemoveFish" disabled="@(_fishComponents.Count == 0)">Remove fish</button>
-    @foreach (var fish in _fishComponents)
+    <button type="button" class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
+    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish"
+        disabled="@(_fishComponents.Count == 0)">Remove fish</button>
+    @foreach (var fishComponent in _fishComponents)
     {
-        @fish
+        @fishComponent
     }
 </div>
 
@@ -27,18 +29,12 @@
 
     private void AddFish()
     {
-        // Create a new RenderFragment representing the Fish component
-        // and position it using style
-        var fishFragment = new RenderFragment(builder =>
+        _fishComponents.Add(new RenderFragment(builder =>
         {
-            var seq = 0;
-            builder.OpenElement(seq++, "div");
-            builder.OpenComponent<Components.Fish>(seq++);
+            builder.OpenComponent<Fish>(0);
             builder.CloseComponent();
-            builder.CloseElement();
-        });
-
-        _fishComponents.Add(fishFragment);
+        }));
+        StateHasChanged();
     }
 
     private void RemoveFish()
@@ -46,6 +42,7 @@
         if (_fishComponents.Count > 0)
         {
             _fishComponents.RemoveAt(_fishComponents.Count - 1);
+            StateHasChanged();
         }
     }
 }
