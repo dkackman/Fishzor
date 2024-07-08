@@ -60,7 +60,7 @@
     private ElementReference fishElement;
     private Point Position = new();
     private Velocity FishVelocity = new();
-    private bool _animate = false; // used to suppress animation at startup and during dragging 
+    private bool _animate = false; // used to suppress animation at startup and during dragging
 
     // a single timer drives the animation for all fish
     private static readonly Timer _animationTimer = new(50) { AutoReset = true, Enabled = false };
@@ -99,7 +99,6 @@
         {
             // place the new fish at a random point within the tank
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-
             // the 50 is buffer to keep the fish from being placed too close to the edge
             var left = (tankRect.Width - 50.0) * _random.NextDouble();
             var top = (tankRect.Height - 50.0) * _random.NextDouble();
@@ -134,7 +133,7 @@
         _animationTimer.Elapsed += OnTimerElapsedAsync;
     }
 
-    // we need this a static member instead of a lambda to avoid a memory leak when the timer is disposed
+    // we need this a member instead of a lambda to avoid a memory leak when the timer is disposed
     private async void OnTimerElapsedAsync(object? sender, ElapsedEventArgs e) => await MoveFishAsync();
 
     private async Task MoveFishAsync()
