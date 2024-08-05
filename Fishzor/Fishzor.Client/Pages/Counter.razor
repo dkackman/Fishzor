@@ -10,7 +10,14 @@
         position: relative;
     }
 </style>
+<script>
+    window.getTankRect = () => {
+        var element = document.getElementById("fishTank");
+        if (!element) return null;
 
+        return element.getBoundingClientRect();
+    }    
+</script>
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
 

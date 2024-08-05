@@ -16,11 +16,13 @@
             dotNetRef.invokeMethodAsync('OnDraggingStart')
             e = e || window.event;
             e.preventDefault();
+
             // get the mouse cursor position at startup:
             pos3 = e.clientX;
             pos4 = e.clientY;
+
+            // drag functions
             document.onmouseup = closeDragElement;
-            // call a function whenever the cursor moves:
             document.onmousemove = elementDrag;
         }
 
@@ -32,13 +34,14 @@
             pos2 = pos4 - e.clientY;
             pos3 = e.clientX;
             pos4 = e.clientY;
+
             // set the element's new position:
             element.style.top = (element.offsetTop - pos2) + "px";
             element.style.left = (element.offsetLeft - pos1) + "px";
         }
 
         function closeDragElement() {
-            /* stop moving when mouse button is released:*/
+            // disable drag functinos when mouse button is released
             document.onmouseup = null;
             document.onmousemove = null;
 
@@ -146,7 +149,7 @@
         _animationTimer.Elapsed += OnTimerElapsedAsync;
     }
 
-    // we need this a member instead of a lambda to avoid a memory leak when the timer is disposed
+    // we need this as a member instead of a lambda to avoid a memory leak when the timer is disposed
     private async void OnTimerElapsedAsync(object? sender, ElapsedEventArgs e) => await MoveFishAsync();
 
     private async Task MoveFishAsync()

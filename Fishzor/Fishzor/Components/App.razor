@@ -23,13 +23,6 @@
     <Routes />
     <script src="_framework/blazor.web.js"></script>
     <script>
-        window.getTankRect = () => {
-            var element = document.getElementById("fishTank");
-            if (!element) return null;
-
-            return element.getBoundingClientRect();
-        }
-
         window.getElementRect = (element) => {
             if (!element) return null;
             return element.getBoundingClientRect();
