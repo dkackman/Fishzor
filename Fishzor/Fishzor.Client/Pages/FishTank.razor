@@ -33,7 +33,7 @@
 @code {
     private List<RenderFragment> _fishComponents = new();
 
-    private void AddFish()
+    public void AddFish()
     {
         _fishComponents.Add(new RenderFragment(builder =>
         {
@@ -43,7 +43,7 @@
         StateHasChanged();
     }
 
-    private void RemoveFish()
+    public void RemoveFish()
     {
         if (_fishComponents.Count > 0)
         {
