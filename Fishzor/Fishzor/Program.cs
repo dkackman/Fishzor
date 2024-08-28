@@ -7,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddScoped<Fishzor.Client.Services.FishService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,7 +24,6 @@ else
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 

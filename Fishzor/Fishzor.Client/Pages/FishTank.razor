@@ -1,54 +1,61 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
 @using global::Fishzor.Client.Components
+@using Fishzor.Client.Services
 @inject IJSRuntime JSRuntime
+@inject FishService FishService
+@implements IDisposable
+@if (FishService == null)
+{
+    <p>FishService is not available.</p>
+}
+else
+{
+    <style>
+        #fishTank {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+    </style>
+    <script>
+        window.getTankRect = () => {
+            var element = document.getElementById("fishTank");
+            if (!element) return null;
 
-<style>
-    #fishTank {
-        width: 100%;
-        height: 100%;
-        position: relative;
-    }
-</style>
-<script>
-    window.getTankRect = () => {
-        var element = document.getElementById("fishTank");
-        if (!element) return null;
+            return element.getBoundingClientRect();
+        }    
+    </script>
+    <div id="fishTank">
+        <PageTitle>Fishy fishy fish</PageTitle>
 
-        return element.getBoundingClientRect();
-    }    
-</script>
-<div id="fishTank">
-    <PageTitle>Fishy fishy fish</PageTitle>
+        <button type="button" class="btn btn-primary btn-sm" @onclick="FishService.AddFish">Add fish</button>
+        <button type="button" class="btn btn-primary btn-sm" @onclick="FishService.RemoveFish"
+            disabled="@(FishService.FishComponents.Count == 0)">
+            Remove fish
+        </button>
+        @foreach (var fishComponent in FishService.FishComponents)
+        {
+            @fishComponent
+        }
+    </div>
+}
 
-    <button type="button" class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
-    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish"
-        disabled="@(_fishComponents.Count == 0)">Remove fish</button>
-    @foreach (var fishComponent in _fishComponents)
-    {
-        @fishComponent
-    }
-</div>
 
 @code {
-    private List<RenderFragment> _fishComponents = new();
-
-    public void AddFish()
+    protected override void OnInitialized()
     {
-        _fishComponents.Add(new RenderFragment(builder =>
+        if (FishService != null)
         {
-            builder.OpenComponent<Fish>(0);
-            builder.CloseComponent();
-        }));
-        StateHasChanged();
+            FishService.OnChange += StateHasChanged;
+        }
     }
 
-    public void RemoveFish()
+    public void Dispose()
     {
-        if (_fishComponents.Count > 0)
+        if (FishService != null)
         {
-            _fishComponents.RemoveAt(_fishComponents.Count - 1);
-            StateHasChanged();
+            FishService.OnChange -= StateHasChanged;
         }
     }
 }
