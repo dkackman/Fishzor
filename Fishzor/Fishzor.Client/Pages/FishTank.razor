@@ -1,61 +1,86 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
 @using global::Fishzor.Client.Components
-@using Fishzor.Client.Services
 @inject IJSRuntime JSRuntime
-@inject FishService FishService
 @implements IDisposable
-@if (FishService == null)
-{
-    <p>FishService is not available.</p>
-}
-else
-{
-    <style>
-        #fishTank {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-    </style>
-    <script>
-        window.getTankRect = () => {
-            var element = document.getElementById("fishTank");
-            if (!element) return null;
 
-            return element.getBoundingClientRect();
-        }    
-    </script>
-    <div id="fishTank">
-        <PageTitle>Fishy fishy fish</PageTitle>
+<style>
+    #fishTank {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+</style>
+<script>
+    window.getTankRect = () => {
+        var element = document.getElementById("fishTank");
+        if (!element) return null;
 
-        <button type="button" class="btn btn-primary btn-sm" @onclick="FishService.AddFish">Add fish</button>
-        <button type="button" class="btn btn-primary btn-sm" @onclick="FishService.RemoveFish"
-            disabled="@(FishService.FishComponents.Count == 0)">
-            Remove fish
-        </button>
-        @foreach (var fishComponent in FishService.FishComponents)
-        {
-            @fishComponent
-        }
-    </div>
-}
+        return element.getBoundingClientRect();
+    }    
+</script>
+<div id="fishTank">
+    <PageTitle>Fishy fishy fish</PageTitle>
 
+    <button type="button" class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
+    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish" disabled="@(FishCount == 0)">
+        Remove fish
+    </button>
+    @for (int i = 0; i < FishCount; i++)
+    {
+        <Fish />
+    }
+</div>
 
 @code {
-    protected override void OnInitialized()
+    [Inject]
+    private HttpClient? HttpClient { get; set; }
+
+    private int FishCount { get; set; } = 0;
+    private System.Threading.Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
     {
-        if (FishService != null)
+        await UpdateFishCount();
+        _timer = new System.Threading.Timer(async _ => await InvokeAsync(UpdateFishCount), null, TimeSpan.Zero,
+        TimeSpan.FromSeconds(5));
+    }
+
+    private async Task AddFish()
+    {
+        if (HttpClient == null) return;
+        var response = await HttpClient.PostAsync("api/fish/add", null);
+        if (response.IsSuccessStatusCode)
         {
-            FishService.OnChange += StateHasChanged;
+            FishCount = await response.Content.ReadFromJsonAsync<int>();
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveFish()
+    {
+        if (HttpClient == null) return;
+        var response = await HttpClient.PostAsync("api/fish/remove", null);
+        if (response.IsSuccessStatusCode)
+        {
+            FishCount = await response.Content.ReadFromJsonAsync<int>();
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateFishCount()
+    {
+        if (HttpClient == null) return;
+        var response = await HttpClient.GetAsync("api/fish/count");
+        if (response.IsSuccessStatusCode)
+        {
+            FishCount = await response.Content.ReadFromJsonAsync<int>();
+            StateHasChanged();
         }
     }
 
     public void Dispose()
     {
-        if (FishService != null)
-        {
-            FishService.OnChange -= StateHasChanged;
-        }
+        _timer?.Dispose();
     }
 }
