@@ -2,7 +2,7 @@
 @rendermode InteractiveWebAssembly
 @using global::Fishzor.Client.Components
 @inject IJSRuntime JSRuntime
-@implements IDisposable
+@implements IAsyncDisposable
 
 <style>
     #fishTank {
@@ -17,7 +17,7 @@
         if (!element) return null;
 
         return element.getBoundingClientRect();
-    }    
+    }
 </script>
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
@@ -31,56 +31,96 @@
         <Fish />
     }
 </div>
-
 @code {
     [Inject]
     private HttpClient? HttpClient { get; set; }
-
     private int FishCount { get; set; } = 0;
-    private System.Threading.Timer? _timer;
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync()
     {
+        _cts = new CancellationTokenSource();
         await UpdateFishCount();
-        _timer = new System.Threading.Timer(async _ => await InvokeAsync(UpdateFishCount), null, TimeSpan.Zero,
-        TimeSpan.FromSeconds(5));
+        _ = StartPeriodicUpdateAsync(_cts.Token);
+    }
+
+    private async Task StartPeriodicUpdateAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await Task.Delay(5000, cancellationToken);
+            await InvokeAsync(async () =>
+            {
+                await UpdateFishCount();
+                StateHasChanged();
+            });
+        }
     }
 
     private async Task AddFish()
     {
-        if (HttpClient == null) return;
-        var response = await HttpClient.PostAsync("api/fish/add", null);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            FishCount = await response.Content.ReadFromJsonAsync<int>();
-            StateHasChanged();
+            if (HttpClient is not null)
+            {
+                var response = await HttpClient.PostAsync("api/fish/add", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    await UpdateFishCount();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding fish: {ex.Message}");
         }
     }
 
     private async Task RemoveFish()
     {
-        if (HttpClient == null) return;
-        var response = await HttpClient.PostAsync("api/fish/remove", null);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            FishCount = await response.Content.ReadFromJsonAsync<int>();
-            StateHasChanged();
+            if (HttpClient is not null)
+            {
+                var response = await HttpClient.PostAsync("api/fish/remove", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    await UpdateFishCount();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing fish: {ex.Message}");
         }
     }
 
     private async Task UpdateFishCount()
     {
-        if (HttpClient == null) return;
-        var response = await HttpClient.GetAsync("api/fish/count");
-        if (response.IsSuccessStatusCode)
+        try
         {
-            FishCount = await response.Content.ReadFromJsonAsync<int>();
-            StateHasChanged();
+            if (HttpClient is not null)
+            {
+                var response = await HttpClient.GetAsync("api/fish/count");
+                if (response.IsSuccessStatusCode)
+                {
+                    FishCount = await response.Content.ReadFromJsonAsync<int>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating fish count: {ex.Message}");
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _timer?.Dispose();
+        if (_cts != null)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+            await Task.CompletedTask;
+        }
     }
 }
