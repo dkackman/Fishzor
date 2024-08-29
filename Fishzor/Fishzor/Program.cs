@@ -1,6 +1,7 @@
 using Fishzor.Client.Pages;
 using Fishzor.Components;
 using Fishzor.Services;
+using Fishzor.Client.State;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddControllers();
 builder.Services.AddSingleton<FishService>();
+builder.Services.AddScoped<FishTankState>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7233/") });
 
 

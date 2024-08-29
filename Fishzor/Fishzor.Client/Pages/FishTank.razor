@@ -1,6 +1,7 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
 @using global::Fishzor.Client.Components
+@inject FishTankState FishTankState
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
@@ -23,10 +24,10 @@
     <PageTitle>Fishy fishy fish</PageTitle>
 
     <button type="button" class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
-    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish" disabled="@(FishCount == 0)">
+    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish" disabled="@(FishTankState.FishCount == 0)">
         Remove fish
     </button>
-    @for (int i = 0; i < FishCount; i++)
+    @for (int i = 0; i < FishTankState.FishCount; i++)
     {
         <Fish />
     }
@@ -34,11 +35,11 @@
 @code {
     [Inject]
     private HttpClient? HttpClient { get; set; }
-    private int FishCount { get; set; } = 0;
     private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync()
     {
+        FishTankState.OnStateChanged += StateHasChanged;
         _cts = new CancellationTokenSource();
         await UpdateFishCount();
         _ = StartPeriodicUpdateAsync(_cts.Token);
@@ -104,8 +105,8 @@
                 var response = await HttpClient.GetAsync("api/fish/count");
                 if (response.IsSuccessStatusCode)
                 {
-                    FishCount = await response.Content.ReadFromJsonAsync<int>();
-                }
+                    FishTankState.FishCount = await response.Content.ReadFromJsonAsync<int>();
+                }            
             }
         }
         catch (Exception ex)

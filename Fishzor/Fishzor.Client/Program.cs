@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Fishzor.Client.State;
 
 Console.WriteLine("Client Program.cs is starting");
 
@@ -17,6 +18,7 @@ else
 
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
+builder.Services.AddScoped<FishTankState>();
 await builder.Build().RunAsync();
 
 Console.WriteLine("Client application started");
