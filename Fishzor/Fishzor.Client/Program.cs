@@ -16,7 +16,6 @@ else
     baseAddress = builder.HostEnvironment.BaseAddress;
 }
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 builder.Services.AddScoped<FishTankState>();
 
 var host = builder.Build();

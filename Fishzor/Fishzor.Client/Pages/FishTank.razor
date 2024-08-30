@@ -1,9 +1,10 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
 @using global::Fishzor.Client.Components
-@inject FishTankState FishTankState
+@using Fishzor.Client.State
 @inject IJSRuntime JSRuntime
-@implements IAsyncDisposable
+@inject FishTankState FishTankState
+@implements IDisposable
 
 <style>
     #fishTank {
@@ -18,13 +19,14 @@
         if (!element) return null;
 
         return element.getBoundingClientRect();
-    }
+    }    
 </script>
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
 
     <button type="button" class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
-    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish" disabled="@(FishTankState.FishCount == 0)">
+    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish"
+        disabled="@(FishTankState.FishCount == 0)">
         Remove fish
     </button>
     @for (int i = 0; i < FishTankState.FishCount; i++)
@@ -32,10 +34,8 @@
         <Fish />
     }
 </div>
-@code {
-    [Inject]
-    private HttpClient? HttpClient { get; set; }
 
+@code {
     protected override void OnInitialized()
     {
         FishTankState.OnStateChanged += StateHasChanged;
@@ -45,11 +45,12 @@
     {
         try
         {
-            await HttpClient.PostAsync("api/fish/add", null);
+            await FishTankState.AddFish();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error adding fish: {ex.Message}");
+            // Consider adding user-friendly error handling here
         }
     }
 
@@ -57,17 +58,17 @@
     {
         try
         {
-            await HttpClient.PostAsync("api/fish/remove", null);
+            await FishTankState.RemoveFish();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error removing fish: {ex.Message}");
+            // Consider adding user-friendly error handling here
         }
     }
 
-    public ValueTask DisposeAsync()
+    public void Dispose()
     {
         FishTankState.OnStateChanged -= StateHasChanged;
-        return ValueTask.CompletedTask;
     }
 }

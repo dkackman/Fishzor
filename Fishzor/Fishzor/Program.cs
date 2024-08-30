@@ -14,7 +14,6 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers();
 builder.Services.AddSingleton<FishService>();
 builder.Services.AddScoped<FishTankState>();
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7233/") });
 builder.Services.AddSignalR();
 
 var app = builder.Build();
@@ -34,7 +33,6 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
-app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
