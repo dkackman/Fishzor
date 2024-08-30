@@ -1,29 +1,42 @@
-using Microsoft.AspNetCore.Components;
-using Fishzor.Client.Components;
-using System.Collections.Concurrent;
+using Microsoft.AspNetCore.SignalR;
+using Fishzor.Hubs;
 
 namespace Fishzor.Services;
 
 public class FishService
 {
-    private readonly ConcurrentBag<RenderFragment> _fishComponents = new();
+    private int _fishCount = 0;
+    private readonly IHubContext<FishHub> _hubContext;
 
-    public IReadOnlyCollection<RenderFragment> FishComponents => _fishComponents;
-
-    public void AddFish()
+    public FishService(IHubContext<FishHub> hubContext)
     {
-        _fishComponents.Add(new RenderFragment(builder =>
-        {
-            builder.OpenComponent<Fish>(0);
-            builder.CloseComponent();
-        }));
+        _hubContext = hubContext;
     }
 
-    public void RemoveFish()
+    public async Task<int> AddFish()
     {
-        if (_fishComponents.TryTake(out _))
+        _fishCount++;
+        await NotifyClients();
+        return _fishCount;
+    }
+
+    public async Task<int> RemoveFish()
+    {
+        if (_fishCount > 0)
         {
-            // Fish removed successfully
+            _fishCount--;
         }
+        await NotifyClients();
+        return _fishCount;
+    }
+
+    public int GetFishCount()
+    {
+        return _fishCount;
+    }
+
+    private async Task NotifyClients()
+    {
+        await _hubContext.Clients.All.SendAsync("ReceiveFishCount", _fishCount);
     }
 }

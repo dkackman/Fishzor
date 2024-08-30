@@ -4,8 +4,7 @@ using Fishzor.Services;
 using Fishzor.Client.State;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+using Fishzor.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<FishService>();
 builder.Services.AddScoped<FishTankState>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7233/") });
-
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -40,5 +39,6 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Fishzor.Client._Imports).Assembly);
+app.MapHub<FishHub>("/fishhub");
 
 app.Run();

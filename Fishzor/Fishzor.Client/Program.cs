@@ -16,9 +16,14 @@ else
     baseAddress = builder.HostEnvironment.BaseAddress;
 }
 
-
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 builder.Services.AddScoped<FishTankState>();
-await builder.Build().RunAsync();
+
+var host = builder.Build();
+
+var fishTankState = host.Services.GetRequiredService<FishTankState>();
+await fishTankState.InitializeAsync($"{baseAddress}fishhub");
+
+await host.RunAsync();
 
 Console.WriteLine("Client application started");

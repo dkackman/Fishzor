@@ -35,41 +35,17 @@
 @code {
     [Inject]
     private HttpClient? HttpClient { get; set; }
-    private CancellationTokenSource? _cts;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         FishTankState.OnStateChanged += StateHasChanged;
-        _cts = new CancellationTokenSource();
-        await UpdateFishCount();
-        _ = StartPeriodicUpdateAsync(_cts.Token);
-    }
-
-    private async Task StartPeriodicUpdateAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            await Task.Delay(5000, cancellationToken);
-            await InvokeAsync(async () =>
-            {
-                await UpdateFishCount();
-                StateHasChanged();
-            });
-        }
     }
 
     private async Task AddFish()
     {
         try
         {
-            if (HttpClient is not null)
-            {
-                var response = await HttpClient.PostAsync("api/fish/add", null);
-                if (response.IsSuccessStatusCode)
-                {
-                    await UpdateFishCount();
-                }
-            }
+            await HttpClient.PostAsync("api/fish/add", null);
         }
         catch (Exception ex)
         {
@@ -81,14 +57,7 @@
     {
         try
         {
-            if (HttpClient is not null)
-            {
-                var response = await HttpClient.PostAsync("api/fish/remove", null);
-                if (response.IsSuccessStatusCode)
-                {
-                    await UpdateFishCount();
-                }
-            }
+            await HttpClient.PostAsync("api/fish/remove", null);
         }
         catch (Exception ex)
         {
@@ -96,32 +65,9 @@
         }
     }
 
-    private async Task UpdateFishCount()
+    public ValueTask DisposeAsync()
     {
-        try
-        {
-            if (HttpClient is not null)
-            {
-                var response = await HttpClient.GetAsync("api/fish/count");
-                if (response.IsSuccessStatusCode)
-                {
-                    FishTankState.FishCount = await response.Content.ReadFromJsonAsync<int>();
-                }            
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating fish count: {ex.Message}");
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_cts != null)
-        {
-            _cts.Cancel();
-            _cts.Dispose();
-            await Task.CompletedTask;
-        }
+        FishTankState.OnStateChanged -= StateHasChanged;
+        return ValueTask.CompletedTask;
     }
 }

@@ -15,22 +15,23 @@ public class FishController : ControllerBase
     }
 
     [HttpPost("add")]
-    public IActionResult AddFish()
+    public async Task<IActionResult> AddFish()
     {
-        _fishService.AddFish();
-        return Ok(_fishService.FishComponents.Count);
+        int newCount = await _fishService.AddFish();
+        return Ok(newCount);
     }
 
     [HttpPost("remove")]
-    public IActionResult RemoveFish()
+    public async Task<IActionResult> RemoveFish()
     {
-        _fishService.RemoveFish();
-        return Ok(_fishService.FishComponents.Count);
+        int newCount = await _fishService.RemoveFish();
+        return Ok(newCount);
     }
 
     [HttpGet("count")]
     public IActionResult GetFishCount()
     {
-        return Ok(_fishService.FishComponents.Count);
+        int count = _fishService.GetFishCount();
+        return Ok(count);
     }
 }
