@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
 using Fishzor.Hubs;
-using Microsoft.Extensions.Logging;
 
 namespace Fishzor.Services;
 
@@ -31,12 +30,12 @@ public class FishService
         {
             _fishCount--;
             _logger.LogInformation("Fish removed. New count: {FishCount}", _fishCount);
+            await NotifyClients();
         }
         else
         {
             _logger.LogWarning("Attempted to remove fish when count is already 0");
         }
-        await NotifyClients();
         return _fishCount;
     }
 

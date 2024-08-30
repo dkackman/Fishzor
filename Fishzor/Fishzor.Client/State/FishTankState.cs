@@ -39,21 +39,18 @@ public class FishTankState : IAsyncDisposable
 
     public async Task AddFish()
     {
-        if (_hubConnection is null)
+        if (_hubConnection is not null)
         {
-            throw new InvalidOperationException("Hub connection is not initialized.");
+            await _hubConnection.SendAsync("AddFish");
         }
-
-        await _hubConnection.SendAsync("AddFish");
     }
 
     public async Task RemoveFish()
     {
-        if (_hubConnection is null)
+        if (_hubConnection is not null)
         {
-            throw new InvalidOperationException("Hub connection is not initialized.");
+            await _hubConnection.SendAsync("RemoveFish");
         }
-        await _hubConnection.SendAsync("RemoveFish");
     }
 
     public async ValueTask DisposeAsync()

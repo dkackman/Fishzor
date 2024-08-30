@@ -19,7 +19,13 @@
         if (!element) return null;
 
         return element.getBoundingClientRect();
-    }    
+    }
+
+    window.setupBeforeUnload = (dotNetHelper) => {
+        window.onbeforeunload = (event) => {
+            dotNetHelper.invokeMethodAsync('RemoveFishOnUnload');
+        };
+    };
 </script>
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
@@ -31,13 +37,33 @@
 </div>
 
 @code {
+    private DotNetObjectReference<FishTank>? objRef;
+
     protected override void OnInitialized()
     {
         FishTankState.OnStateChanged += StateHasChanged;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("setupBeforeUnload", objRef);
+            await FishTankState.AddFish();
+        }
+    }
+
+    [JSInvokable]
+    public async Task RemoveFishOnUnload()
+    {
+        await FishTankState.RemoveFish();
+    }
+
     public void Dispose()
     {
         FishTankState.OnStateChanged -= StateHasChanged;
+
+        objRef?.Dispose();
     }
 }
