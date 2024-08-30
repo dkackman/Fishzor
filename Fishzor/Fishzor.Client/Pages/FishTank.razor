@@ -1,0 +1,69 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+@using global::Fishzor.Client.Components
+@using Fishzor.Client.State
+@inject IJSRuntime JSRuntime
+@inject FishTankState FishTankState
+@implements IDisposable
+
+<style>
+    #fishTank {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+</style>
+<script>
+    window.getTankRect = () => {
+        var element = document.getElementById("fishTank");
+        if (!element) return null;
+
+        return element.getBoundingClientRect();
+    }
+
+    window.setupBeforeUnload = (dotNetHelper) => {
+        window.onbeforeunload = (event) => {
+            dotNetHelper.invokeMethodAsync('RemoveFishOnUnload');
+        };
+    };
+</script>
+<div id="fishTank">
+    <PageTitle>Fishy fishy fish</PageTitle>
+
+    @for (int i = 0; i < FishTankState.FishCount; i++)
+    {
+        <Fish />
+    }
+</div>
+
+@code {
+    private DotNetObjectReference<FishTank>? objRef;
+
+    protected override void OnInitialized()
+    {
+        FishTankState.OnStateChanged += StateHasChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("setupBeforeUnload", objRef);
+            await FishTankState.AddFish();
+        }
+    }
+
+    [JSInvokable]
+    public async Task RemoveFishOnUnload()
+    {
+        await FishTankState.RemoveFish();
+    }
+
+    public void Dispose()
+    {
+        FishTankState.OnStateChanged -= StateHasChanged;
+
+        objRef?.Dispose();
+    }
+}
