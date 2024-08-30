@@ -24,11 +24,6 @@
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
 
-    <button type="button" class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
-    <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish"
-        disabled="@(FishTankState.FishCount == 0)">
-        Remove fish
-    </button>
     @for (int i = 0; i < FishTankState.FishCount; i++)
     {
         <Fish />
@@ -39,32 +34,6 @@
     protected override void OnInitialized()
     {
         FishTankState.OnStateChanged += StateHasChanged;
-    }
-
-    private async Task AddFish()
-    {
-        try
-        {
-            await FishTankState.AddFish();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error adding fish: {ex.Message}");
-            // Consider adding user-friendly error handling here
-        }
-    }
-
-    private async Task RemoveFish()
-    {
-        try
-        {
-            await FishTankState.RemoveFish();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error removing fish: {ex.Message}");
-            // Consider adding user-friendly error handling here
-        }
     }
 
     public void Dispose()

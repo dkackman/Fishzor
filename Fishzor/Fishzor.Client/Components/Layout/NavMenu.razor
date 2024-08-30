@@ -1,4 +1,8 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Fishzor.Client.State
+@rendermode InteractiveWebAssembly
+@inject FishTankState FishTankState
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Fishzor</a>
     </div>
@@ -8,18 +12,50 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Add
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Remove
-            </NavLink>
-        </div>
+        <button type="button" class="btn btn-primary btn-sm" @onclick="AddFish">Add fish</button>
+        <button type="button" class="btn btn-primary btn-sm" @onclick="RemoveFish"
+            disabled="@(FishTankState.FishCount <= 0)">
+            Remove fish
+        </button>
 
     </nav>
 </div>
 
+@code {
+    protected override void OnInitialized()
+    {
+        FishTankState.OnStateChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        FishTankState.OnStateChanged -= StateHasChanged;
+    }
+
+    private async Task AddFish()
+    {
+        try
+        {
+            await FishTankState.AddFish();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding fish: {ex.Message}");
+            // Consider adding user-friendly error handling here
+        }
+    }
+
+    private async Task RemoveFish()
+    {
+        try
+        {
+            await FishTankState.RemoveFish();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing fish: {ex.Message}");
+            // Consider adding user-friendly error handling here
+        }
+    }
+
+}
