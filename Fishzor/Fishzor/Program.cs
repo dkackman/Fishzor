@@ -1,11 +1,8 @@
-using Fishzor.Client.Pages;
 using Fishzor.Components;
 using Fishzor.Services;
 using Fishzor.Client.State;
-using System.Net.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Fishzor.Hubs;
-using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
