@@ -4,36 +4,24 @@ using System.Collections.Concurrent;
 
 namespace Fishzor.Services;
 
-public class FishService
+public class FishService(IHubContext<FishHub> hubContext, ILogger<FishService> logger)
 {
-    private readonly IHubContext<FishHub> _hubContext;
-    private readonly ILogger<FishService> _logger;
+    private readonly IHubContext<FishHub> _hubContext = hubContext;
+    private readonly ILogger<FishService> _logger = logger;
     private readonly ConcurrentDictionary<string, bool> _connectedClients = new();
-
-    public FishService(IHubContext<FishHub> hubContext, ILogger<FishService> logger)
-    {
-        _hubContext = hubContext;
-        _logger = logger;
-        _logger.LogInformation("FishService initialized");
-    }
 
     public async Task ClientConnected(string connectionId)
     {
+        _logger.LogDebug("Client connected: {ConnectionId}", connectionId);
         _connectedClients.TryAdd(connectionId, true);
-        await UpdateFishCount();
+        await NotifyClients(_connectedClients.Count);
     }
 
     public async Task ClientDisconnected(string connectionId)
     {
+        _logger.LogDebug("Client disconnected: {ConnectionId}", connectionId);
         _connectedClients.TryRemove(connectionId, out _);
-        await UpdateFishCount();
-    }
-
-    public async Task UpdateFishCount()
-    {
-        int fishCount = _connectedClients.Count;
-        _logger.LogInformation("Fish count updated: {FishCount}", fishCount);
-        await NotifyClients(fishCount);
+        await NotifyClients(_connectedClients.Count);
     }
 
     private async Task NotifyClients(int fishCount)

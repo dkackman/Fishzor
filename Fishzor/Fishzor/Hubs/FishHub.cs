@@ -3,16 +3,10 @@ using Fishzor.Services;
 
 namespace Fishzor.Hubs;
 
-public class FishHub : Hub
+public class FishHub(FishService fishService, ILogger<FishHub> logger) : Hub
 {
-    private readonly FishService _fishService;
-    private readonly ILogger<FishHub> _logger;
-
-    public FishHub(FishService fishService, ILogger<FishHub> logger)
-    {
-        _fishService = fishService;
-        _logger = logger;
-    }
+    private readonly FishService _fishService = fishService;
+    private readonly ILogger<FishHub> _logger = logger;
 
     public override async Task OnConnectedAsync()
     {
