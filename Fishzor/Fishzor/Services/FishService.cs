@@ -25,19 +25,20 @@ public class FishService(IHubContext<FishHub> hubContext, ILogger<FishService> l
             Color = (FishColor)(colors.GetValue(_random.Next(colors.Length)) ?? FishColor.Orange)
         };
         _connectedClients.TryAdd(connectionId, state);
-        await NotifyClients(_connectedClients.Count);
+        await NotifyClients();
     }
 
     public async Task ClientDisconnected(string connectionId)
     {
         _logger.LogDebug("Client disconnected: {ConnectionId}", connectionId);
         _connectedClients.TryRemove(connectionId, out _);
-        await NotifyClients(_connectedClients.Count);
+        await NotifyClients();
     }
 
-    private async Task NotifyClients(int fishCount)
+    private async Task NotifyClients()
     {
-        _logger.LogDebug("Notifying clients of updated fish count: {FishCount}", fishCount);
-        await _hubContext.Clients.All.SendAsync("ReceiveFishCount", fishCount);
+        _logger.LogDebug("Notifying clients of updated fish count: {FishCount}", _connectedClients.Count);
+        await _hubContext.Clients.All.SendAsync("ReceiveFishCount", _connectedClients.Count);
+        await _hubContext.Clients.All.SendAsync("ReceiveFishState", _connectedClients.Values);
     }
 }
