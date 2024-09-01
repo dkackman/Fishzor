@@ -1,4 +1,3 @@
-using Fishzor.Client.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Fishzor.Client.State;
