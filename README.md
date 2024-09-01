@@ -1,5 +1,7 @@
 # Fishzor
 
+[![CodeQL](https://github.com/dkackman/Fishzor/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/dkackman/Fishzor/actions/workflows/github-code-scanning/codeql)
+
 This [WinForms App](https://github.com/dkackman/FishyFishyFish), rewrittem in Blazor. For the heck of it, that's why.
 
 https://fishzor.azurewebsites.net/
