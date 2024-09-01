@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.SignalR;
 using Fishzor.Hubs;
+using System.Collections.Concurrent;
 
 namespace Fishzor.Services;
 
 public class FishService
 {
-    private int _fishCount = 0;
     private readonly IHubContext<FishHub> _hubContext;
     private readonly ILogger<FishService> _logger;
+    private readonly ConcurrentDictionary<string, bool> _connectedClients = new();
 
     public FishService(IHubContext<FishHub> hubContext, ILogger<FishService> logger)
     {
@@ -16,38 +17,28 @@ public class FishService
         _logger.LogInformation("FishService initialized");
     }
 
-    public async Task<int> AddFish()
+    public async Task ClientConnected(string connectionId)
     {
-        _fishCount++;
-        _logger.LogInformation("Fish added. New count: {FishCount}", _fishCount);
-        await NotifyClients();
-        return _fishCount;
+        _connectedClients.TryAdd(connectionId, true);
+        await UpdateFishCount();
     }
 
-    public async Task<int> RemoveFish()
+    public async Task ClientDisconnected(string connectionId)
     {
-        if (_fishCount > 0)
-        {
-            _fishCount--;
-            _logger.LogInformation("Fish removed. New count: {FishCount}", _fishCount);
-            await NotifyClients();
-        }
-        else
-        {
-            _logger.LogWarning("Attempted to remove fish when count is already 0");
-        }
-        return _fishCount;
+        _connectedClients.TryRemove(connectionId, out _);
+        await UpdateFishCount();
     }
 
-    public int GetFishCount()
+    public async Task UpdateFishCount()
     {
-        _logger.LogDebug("Fish count requested: {FishCount}", _fishCount);
-        return _fishCount;
+        int fishCount = _connectedClients.Count;
+        _logger.LogInformation("Fish count updated: {FishCount}", fishCount);
+        await NotifyClients(fishCount);
     }
 
-    private async Task NotifyClients()
+    private async Task NotifyClients(int fishCount)
     {
-        _logger.LogDebug("Notifying clients of updated fish count: {FishCount}", _fishCount);
-        await _hubContext.Clients.All.SendAsync("ReceiveFishCount", _fishCount);
+        _logger.LogDebug("Notifying clients of updated fish count: {FishCount}", fishCount);
+        await _hubContext.Clients.All.SendAsync("ReceiveFishCount", fishCount);
     }
 }

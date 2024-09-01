@@ -37,22 +37,6 @@ public class FishTankState : IAsyncDisposable
         await _hubConnection.StartAsync();
     }
 
-    public async Task AddFish()
-    {
-        if (_hubConnection is not null)
-        {
-            await _hubConnection.SendAsync("AddFish");
-        }
-    }
-
-    public async Task RemoveFish()
-    {
-        if (_hubConnection is not null)
-        {
-            await _hubConnection.SendAsync("RemoveFish");
-        }
-    }
-
     public async ValueTask DisposeAsync()
     {
         if (_hubConnection is not null)
