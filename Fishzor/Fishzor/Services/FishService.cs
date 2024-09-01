@@ -1,19 +1,30 @@
 using Microsoft.AspNetCore.SignalR;
 using Fishzor.Hubs;
 using System.Collections.Concurrent;
+using Fishzor.Client.State;
+using Fishzor.Client.Components;
 
 namespace Fishzor.Services;
 
 public class FishService(IHubContext<FishHub> hubContext, ILogger<FishService> logger)
 {
+    private static readonly Random _random = new();
+
     private readonly IHubContext<FishHub> _hubContext = hubContext;
     private readonly ILogger<FishService> _logger = logger;
-    private readonly ConcurrentDictionary<string, bool> _connectedClients = new();
+    private readonly ConcurrentDictionary<string, FishState> _connectedClients = new();
 
     public async Task ClientConnected(string connectionId)
     {
         _logger.LogDebug("Client connected: {ConnectionId}", connectionId);
-        _connectedClients.TryAdd(connectionId, true);
+        
+        var colors = Enum.GetValues(typeof(FishColor));
+        var state = new FishState 
+        { 
+            Id = connectionId,
+            Color = (FishColor)(colors.GetValue(_random.Next(colors.Length)) ?? FishColor.Orange)
+        };
+        _connectedClients.TryAdd(connectionId, state);
         await NotifyClients(_connectedClients.Count);
     }
 
