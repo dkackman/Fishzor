@@ -1,4 +1,15 @@
 ﻿@inherits LayoutComponentBase
+<style>
+    #mainView {
+        background-image: url('images/background.jpg');
+        background-size: cover;
+        /* This will cover the entire area */
+        background-position: center;
+        /* This centers the image */
+        background-repeat: no-repeat;
+        /* This prevents the image from repeating */
+    }
+</style>
 
 <div class="page" style="height: 100vh;">
     @*
@@ -8,16 +19,16 @@
     *@
 
     <main style="height: 100%;">
-        <nav class="navbar bg-body-tertiary">
-            <div class="container-fluid">
-                <span class="navbar-brand mb-0 h1">Fishy fishy fish</span>
-                <span class="navbar-text">
-                    <a href="https://github.com/dkackman/Fishzor" target="_blank">About</a>
-                </span>
-            </div>
-        </nav>
+        @* <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Fishy fishy fish</span>
+        <span class="navbar-text">
+        <a href="https://github.com/dkackman/Fishzor" target="_blank">About</a>
+        </span>
+        </div>
+        </nav> *@
 
-        <article class="content px-4" style="height: calc(100% - 60px);">
+        <article id="mainView" class="content px-4" style="height:100%">
             @Body
         </article>
     </main>
