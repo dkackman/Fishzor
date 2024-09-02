@@ -1,26 +1,14 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Collections.Generic;
 
 namespace Fishzor.Client.State;
 
 public class FishTankState : IAsyncDisposable
 {
-    private IEnumerable<FishState> fish = [];
+    private List<FishState> _fish = new();
     private HubConnection? _hubConnection;
 
-    public IEnumerable<FishState> Fish
-    {
-        get => fish;
-        private set
-        {
-            fish = value;
-            OnStateChanged?.Invoke();
-        }
-    }
-
-    public int FishCount
-    {
-        get => fish.Count();
-    }
+    public IReadOnlyList<FishState> Fish => _fish.AsReadOnly();
 
     public event Action? OnStateChanged;
 
@@ -31,9 +19,10 @@ public class FishTankState : IAsyncDisposable
             .WithAutomaticReconnect()
             .Build();
 
-        _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fish =>
+        _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fishStates =>
         {
-            Fish = fish;
+            _fish = new List<FishState>(fishStates);
+            OnStateChanged?.Invoke();
         });
 
         await _hubConnection.StartAsync();

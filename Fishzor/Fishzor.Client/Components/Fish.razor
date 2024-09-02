@@ -52,7 +52,8 @@
 </script>
 
 @code {
-    public FishColor Color { get; set; } = FishColor.Orange;
+    [Parameter]
+    public FishColor Color { get; set; }
     public string Scale { get; set; } = "100.0";
     public string FrameDuration
     {
@@ -138,8 +139,6 @@
     protected override void OnInitialized()
     {
         // randomize the fish state
-        var colors = Enum.GetValues(typeof(FishColor));
-        Color = (FishColor)(colors.GetValue(_random.Next(colors.Length)) ?? FishColor.Orange);
         var scaleValue = _random.NextDouble() * (1.00 - 0.5) + 0.5;
         Scale = scaleValue.ToString("0.##");
 

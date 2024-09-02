@@ -38,7 +38,6 @@ public class FishService(IHubContext<FishHub> hubContext, ILogger<FishService> l
     private async Task NotifyClients()
     {
         _logger.LogDebug("Notifying clients of updated fish count: {FishCount}", _connectedClients.Count);
-        await _hubContext.Clients.All.SendAsync("ReceiveFishCount", _connectedClients.Count);
         await _hubContext.Clients.All.SendAsync("ReceiveFishState", _connectedClients.Values);
     }
 }

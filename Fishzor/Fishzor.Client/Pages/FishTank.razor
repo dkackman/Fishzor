@@ -26,9 +26,9 @@
 <div id="fishTank">
     <PageTitle>Fishy fishy fish</PageTitle>
 
-    @for (int i = 0; i < FishTankState.FishCount; i++)
+    @foreach (var fish in FishTankState.Fish)
     {
-        <Fish />
+        <Fish Color="@fish.Color" @key="fish.Id" />
     }
 </div>
 
