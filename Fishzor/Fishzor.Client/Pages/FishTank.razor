@@ -28,7 +28,7 @@
 
     @foreach (var fish in FishTankState.Fish)
     {
-        <Fish Color="@fish.Color" @key="fish.Id" />
+        <Fish Color="@fish.Color" IsClientFish="@(fish.Id == FishTankState.ClientConnectionId)" @key="fish.Id" />
     }
 </div>
 

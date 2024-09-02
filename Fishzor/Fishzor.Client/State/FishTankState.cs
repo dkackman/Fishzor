@@ -7,7 +7,7 @@ public class FishTankState : IAsyncDisposable
 {
     private List<FishState> _fish = new();
     private HubConnection? _hubConnection;
-
+    public string? ClientConnectionId { get; private set; }
     public IReadOnlyList<FishState> Fish => _fish.AsReadOnly();
 
     public event Action? OnStateChanged;
@@ -26,6 +26,7 @@ public class FishTankState : IAsyncDisposable
         });
 
         await _hubConnection.StartAsync();
+        ClientConnectionId = _hubConnection.ConnectionId;
     }
 
     public async ValueTask DisposeAsync()

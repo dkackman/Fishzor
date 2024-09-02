@@ -6,7 +6,7 @@
 @inject IJSRuntime JSRuntime
 
 <img src="@FishImagePath" alt="@Color" @ref="fishElement"
-    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale});")" />
+    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
 <script>
     function makeDraggable(element, dotNetRef) {
@@ -41,7 +41,7 @@
         }
 
         function closeDragElement() {
-            // disable drag functinos when mouse button is released
+            // disable drag functions when mouse button is released
             document.onmouseup = null;
             document.onmousemove = null;
 
@@ -54,6 +54,8 @@
 @code {
     [Parameter]
     public FishColor Color { get; set; }
+    [Parameter]
+    public bool IsClientFish { get; set; }
     public string Scale { get; set; } = "100.0";
     public string FrameDuration
     {
@@ -77,7 +79,7 @@
     private ElementReference fishElement;
     private Point Position = new();
     private Velocity FishVelocity = new();
-    private bool _animate = false; // used to suppress animation at startup and during dragging
+    private bool _animate = true; // Changed to true by default
 
     // a single timer drives the animation for all fish
     private static readonly Timer _animationTimer = new(50) { AutoReset = true, Enabled = false };
@@ -90,17 +92,23 @@
     [JSInvokable]
     public async Task OnDraggingStart()
     {
-        _animate = false;
-        await Task.CompletedTask;
+        if (IsClientFish)
+        {
+            _animate = false;
+            await Task.CompletedTask;
+        }
     }
 
     [JSInvokable]
     public async Task OnDraggingComplete(double left, double top)
     {
-        Position = new Point(left, top);
-        NewVelocity();
-        _animate = true;
-        await Task.CompletedTask;
+        if (IsClientFish)
+        {
+            Position = new Point(left, top);
+            NewVelocity();
+            _animate = true;
+            await Task.CompletedTask;
+        }
     }
 
     private void NewVelocity()
@@ -123,8 +131,11 @@
             Position = new Point(left, top);
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
 
-            _dotNetRef = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
+            if (IsClientFish)
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
+            }
 
             // now turn on the static timer that drives the animation
             // if it's not already running
@@ -132,7 +143,6 @@
             {
                 _animationTimer.Enabled = true;
             }
-            _animate = true;
         }
     }
 
