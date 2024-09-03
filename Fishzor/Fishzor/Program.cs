@@ -3,6 +3,7 @@ using Fishzor.Services;
 using Fishzor.Client.State;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Fishzor.Hubs;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,13 +35,37 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
     logger.LogInformation("Production environment detected");
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseBlazorFrameworkFiles();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var path = ctx.File.PhysicalPath ?? "";
+        if (path.EndsWith(".jpg") || path.EndsWith(".png") || path.EndsWith(".gif"))
+        {
+            // Cache images for 7 days
+            ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=604800";
+        }
+        else if (!path.Contains("_framework")) // Exclude WebAssembly files
+        {
+            // Cache other static files for 1 day
+            ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=86400";
+        }
+        else
+        {
+            // Do not cache Blazor WebAssembly files
+            ctx.Context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+        }
+    }
+});
+
+app.UseRouting();
 app.UseAntiforgery();
 
 logger.LogDebug("Configuring Razor Components");
@@ -50,6 +75,8 @@ app.MapRazorComponents<App>()
 
 logger.LogDebug("Mapping SignalR hub");
 app.MapHub<FishHub>("/fishhub");
+
+app.MapControllers();
 
 logger.LogInformation("Application configured, starting to run");
 app.Run();
