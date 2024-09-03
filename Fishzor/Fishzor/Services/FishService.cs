@@ -16,11 +16,13 @@ public class FishService(ILogger<FishService> logger)
     {
         _logger.LogDebug("Client connected: {ConnectionId}", connectionId);
         
+        var scaleValue = _random.NextDouble() * (1.00 - 0.5) + 0.5;
         var colors = Enum.GetValues(typeof(FishColor));
         var state = new FishState 
         { 
             Id = connectionId,
-            Color = (FishColor)(colors.GetValue(_random.Next(colors.Length)) ?? FishColor.Orange)
+            Color = (FishColor)(colors.GetValue(_random.Next(colors.Length)) ?? FishColor.Orange),
+            Scale = scaleValue.ToString("0.##")
         };
         _connectedFish.TryAdd(connectionId, state);
     }
