@@ -5,29 +5,30 @@
         background-size: cover;
         /* This will cover the entire area */
         background-position: center;
-        /* This centers the image */
         background-repeat: no-repeat;
-        /* This prevents the image from repeating */
+    }
+
+    #mainView::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.3);
+        /* White overlay with 30% opacity */
+        pointer-events: none;
+        /* Allows clicks to pass through to elements below */
+    }
+
+    #mainView>* {
+        position: relative;
+        /* Ensures content is above the overlay */
     }
 </style>
 
 <div class="page" style="height: 100vh;">
-    @*
-    <div class="sidebar">
-    <NavMenu />
-    </div>
-    *@
-
     <main style="height: 100%;">
-        @* <nav class="navbar bg-body-tertiary">
-        <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">Fishy fishy fish</span>
-        <span class="navbar-text">
-        <a href="https://github.com/dkackman/Fishzor" target="_blank">About</a>
-        </span>
-        </div>
-        </nav> *@
-
         <article id="mainView" class="content px-4" style="height:100%">
             @Body
         </article>
