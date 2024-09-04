@@ -4,6 +4,7 @@ using Fishzor.Client.State;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Fishzor.Hubs;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,10 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<FishService>();
 builder.Services.AddScoped<FishTankState>();
 builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(options =>
+{
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]);
+});
 
 var app = builder.Build();
 
@@ -65,8 +70,14 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    await next();
+});
 app.UseRouting();
 app.UseAntiforgery();
+app.UseResponseCompression();
 
 logger.LogDebug("Configuring Razor Components");
 app.MapRazorComponents<App>()
