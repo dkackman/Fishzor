@@ -5,6 +5,7 @@ using Fishzor.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticFiles;
+using System.Threading.RateLimiting;
 
 namespace Fishzor;
 
@@ -17,6 +18,7 @@ public static class WebApplicationExtensions
             .AddConfiguration(builder.Configuration.GetSection("Logging"))
             .AddConsole()
             .AddDebug();
+
         return builder;
     }
 
@@ -36,6 +38,30 @@ public static class WebApplicationExtensions
             {
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]);
             });
+        builder.Services.AddAntiforgery(options =>
+        {
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        });
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: partition => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = 100,
+                        QueueLimit = 0,
+                        Window = TimeSpan.FromMinutes(1)
+                    }));
+        });
+        builder.Services.AddHsts(options =>
+        {
+            options.MaxAge = TimeSpan.FromDays(365);
+            options.IncludeSubDomains = true;
+            options.Preload = true;
+        });
+        builder.Services.AddHealthChecks();
 
         return builder;
     }
@@ -60,22 +86,22 @@ public static class WebApplicationExtensions
             .UseStaticFiles(new StaticFileOptions { OnPrepareResponse = SetCacheHeaders })
             .UseRouting()
             .UseAntiforgery()
-            .UseResponseCompression();
+            .UseResponseCompression()
+            .UseRateLimiter();
 
         return app;
     }
 
-    public static WebApplication ConfigureEndpoints(this WebApplication app, ILogger logger)
+    public static WebApplication ConfigureEndpoints(this WebApplication app)
     {
-        logger.LogDebug("Configuring Razor Components");
         app.MapRazorComponents<App>()
            .AddInteractiveWebAssemblyRenderMode()
            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
 
-        logger.LogDebug("Mapping SignalR hub");
         app.MapHub<FishHub>("/fishhub");
-
         app.MapControllers();
+        app.MapHealthChecks("/health");
+
         return app;
     }
 
@@ -86,28 +112,35 @@ public static class WebApplicationExtensions
         context.Response.Headers.Remove("Server");
 
         // Add security headers
-        context.Response.Headers.Append("X-Frame-Options", "DENY");
         context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
         context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-        context.Response.Headers.Append("Content-Security-Policy",
-            "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-            "img-src 'self' data:; " +
-            "font-src 'self'; " +
-            "connect-src 'self' wss:;"
-        );
+
+        if (context.Response.ContentType?.Contains("text/html", StringComparison.InvariantCultureIgnoreCase) == true)
+        {
+            var csp = "default-src 'self'; " +
+                  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
+                  "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                  "img-src 'self' data:; " +
+                  "font-src 'self'; " +
+                  "connect-src 'self' wss:; " +
+                  "frame-ancestors 'none';"; // This replaces X-Frame-Options: DENY
+            context.Response.Headers.Append("Content-Security-Policy", csp);
+        }
+
+        context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+        context.Response.Headers.Append("Permissions-Policy", "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()");
+
         await next();
     }
 
     private static void SetCacheHeaders(StaticFileResponseContext ctx)
     {
         var path = ctx.File.PhysicalPath ?? "";
-        string cacheControl = Path.GetExtension(path).ToLower() switch
+        string cacheControl = Path.GetExtension(path).ToLowerInvariant() switch
         {
-            ".jpg" or ".png" or ".gif" => "public,max-age=604800", // 7 days
-            ".js" or ".css" => "public,max-age=86400", // 1 day
-            _ => path.Contains("_framework") ? "no-cache" : "public,max-age=3600" // 1 hour for others
+            ".jpg" or ".png" or ".gif" or ".webp" or ".svg" => "public,max-age=31536000,immutable", // 1 year
+            ".js" or ".css" => "public,max-age=31536000,immutable", // 1 year
+            _ => path.Contains("_framework") ? "no-cache" : "public,max-age=31536000" // 1 year for others, except _framework files
         };
 
         ctx.Context.Response.Headers[HeaderNames.CacheControl] = cacheControl;
