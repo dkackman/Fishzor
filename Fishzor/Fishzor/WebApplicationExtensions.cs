@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Threading.RateLimiting;
+using System.Text;
 
 namespace Fishzor;
 
@@ -117,13 +118,15 @@ public static class WebApplicationExtensions
 
         if (context.Response.ContentType?.Contains("text/html", StringComparison.InvariantCultureIgnoreCase) == true)
         {
-            var csp = "default-src 'self'; " +
-                  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
-                  "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-                  "img-src 'self' data:; " +
-                  "font-src 'self'; " +
-                  "connect-src 'self' wss:; " +
-                  "frame-ancestors 'none';"; // This replaces X-Frame-Options: DENY
+            var csp = new StringBuilder()
+                .Append("default-src 'self'; ")
+                .Append("script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; ")
+                .Append("style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; ")
+                .Append("img-src 'self' data:; ")
+                .Append("font-src 'self'; ")
+                .Append("connect-src 'self' wss:; ")
+                .Append("frame-ancestors 'none';") // This replaces X-Frame-Options: DENY
+                .ToString();
             context.Response.Headers.Append("Content-Security-Policy", csp);
         }
 

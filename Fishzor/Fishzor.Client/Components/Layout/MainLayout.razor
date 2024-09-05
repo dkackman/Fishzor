@@ -1,9 +1,19 @@
 ﻿@inherits LayoutComponentBase
+@using Fishzor.Client.Components
+
+<div class="page" style="height: 100vh;">
+    <main style="height: 100%;">
+        <article id="mainView" class="content px-4" style="height:100%">
+            @Body
+        </article>
+    </main>
+    <ChatInput OnMessageSubmit="@HandleMessageSubmit" />
+</div>
+
 <style>
     #mainView {
         background-image: url('images/background.jpg');
         background-size: cover;
-        /* This will cover the entire area */
         background-position: center;
         background-repeat: no-repeat;
     }
@@ -16,27 +26,27 @@
         right: 0;
         bottom: 0;
         background-color: rgba(255, 255, 255, 0.3);
-        /* White overlay with 30% opacity */
         pointer-events: none;
-        /* Allows clicks to pass through to elements below */
     }
 
     #mainView>* {
         position: relative;
-        /* Ensures content is above the overlay */
     }
 </style>
 
-<div class="page" style="height: 100vh;">
-    <main style="height: 100%;">
-        <article id="mainView" class="content px-4" style="height:100%">
-            @Body
-        </article>
-    </main>
-</div>
+@code {
+    private string lastReceivedMessage = "";
 
-@* <div id="blazor-error-ui">
-An unhandled error has occurred.
-<a href="" class="reload">Reload</a>
-<a class="dismiss">🗙</a>
-</div> *@
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("MainLayout initialized");
+    }
+
+    private void HandleMessageSubmit(string message)
+    {
+        Console.WriteLine($"Received message in MainLayout: {message}");
+        lastReceivedMessage = message;
+        StateHasChanged();
+        // TODO: Implement chat message sending logic
+    }
+}
