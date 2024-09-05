@@ -1,8 +1,10 @@
 @implements IDisposable
+@rendermode InteractiveWebAssembly
+@inject IJSRuntime JSRuntime
 
 <div class="chat-input-container">
-    <input type="text" class="chat-input" value="@chatMessage" @oninput="HandleInput" @onkeyup="HandleKeyPress"
-        maxlength="40" placeholder="Type a short message..." />
+    <input type="text" class="chat-input" @ref="inputElement" @bind="chatMessage" @bind:event="oninput"
+        @onkeyup="HandleKeyPress" maxlength="40" placeholder="Type a short message..." />
     <button class="chat-submit" @onclick="SubmitMessage"
         disabled="@string.IsNullOrWhiteSpace(chatMessage)">Send</button>
 </div>
@@ -64,39 +66,40 @@
 
 @code {
     private string chatMessage = "";
+    private ElementReference inputElement;
 
     [Parameter]
     public EventCallback<string> OnMessageSubmit { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine("ChatInput component initialized");
+        if (firstRender)
+        {
+            await FocusInput();
+        }
     }
 
-    private void HandleInput(ChangeEventArgs e)
+    private async Task FocusInput()
     {
-        chatMessage = e.Value?.ToString() ?? "";
-        Console.WriteLine($"Input changed: {chatMessage}");
-        StateHasChanged();
+        await JSRuntime.InvokeVoidAsync("focusElement", inputElement);
     }
 
     private async Task SubmitMessage()
     {
-        Console.WriteLine($"SubmitMessage called with message: {chatMessage}");
         if (!string.IsNullOrWhiteSpace(chatMessage))
         {
             await OnMessageSubmit.InvokeAsync(chatMessage);
             chatMessage = "";
             StateHasChanged();
+            await FocusInput(); // Re-focus after sending
         }
     }
 
-    private void HandleKeyPress(KeyboardEventArgs e)
+    private async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        Console.WriteLine($"HandleKeyPress called with key: {e.Key}");
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(chatMessage))
         {
-            SubmitMessage();
+            await SubmitMessage();
         }
     }
 

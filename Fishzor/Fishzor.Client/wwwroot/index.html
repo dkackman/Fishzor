@@ -18,6 +18,15 @@
 <body>
   <div id="app">Loading...</div>
   <script src="_framework/blazor.webassembly.js"></script>
+  <script>
+    window.getElementRect = (element) => {
+      if (!element) return null;
+      return element.getBoundingClientRect();
+    };
+    window.focusElement = (element) => {
+      element.focus();
+    }
+  </script>
 </body>
 
 </html>
