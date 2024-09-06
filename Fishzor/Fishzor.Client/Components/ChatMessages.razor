@@ -3,8 +3,10 @@
 <div class="chat-messages">
     @foreach (var message in FishTankState.Messages)
     {
-        <div class="message @(message.ClientId == FishTankState.ClientConnectionId ? "own-message" : "other-message")">
-            <span class="message-text">@message.Message</span>
+        <div class="message @GetMessageClass(message)" style="background-color: @GetColorRgba(message.Color);">
+            <span class="message-text @(message.ClientId == FishTankState.ClientConnectionId ? "own-message" : "")">
+                @message.Message
+            </span>
         </div>
     }
 </div>
@@ -17,7 +19,6 @@
         max-width: 300px;
         max-height: 50vh;
         overflow-y: auto;
-        background-color: rgba(255, 255, 255, 0.8);
         border-radius: 5px;
         padding: 10px;
     }
@@ -26,16 +27,13 @@
         margin-bottom: 10px;
         padding: 5px 10px;
         border-radius: 15px;
+        color: #333;
+        text-shadow: none;
     }
 
     .own-message {
-        background-color: #dcf8c6;
-        align-self: flex-end;
-    }
-
-    .other-message {
-        background-color: #f2f2f2;
-        align-self: flex-start;
+        font-weight: bold;
+        font-style: italic;
     }
 
     .message-text {
@@ -47,5 +45,23 @@
     protected override void OnInitialized()
     {
         FishTankState.OnMessageReceived += (message) => InvokeAsync(StateHasChanged);
+    }
+
+    private string GetMessageClass(FishMessage message) =>
+    message.ClientId == FishTankState.ClientConnectionId ? "own-message" : "other-message";
+
+    private string GetColorRgba(FishColor color)
+    {
+        var (r, g, b) = color switch
+        {
+            FishColor.Blue => (173, 216, 230), // Light Blue
+            FishColor.Green => (144, 238, 144), // Light Green
+            FishColor.Orange => (255, 218, 185), // Peach
+            FishColor.Pink => (255, 182, 193), // Light Pink
+            FishColor.Yellow => (255, 255, 224), // Light Yellow
+            FishColor.Red => (255, 160, 122), // Light Salmon
+            _ => (220, 220, 220), // Light Gray
+        };
+        return $"rgba({r}, {g}, {b}, .65)"; // 0.7 opacity for slight transparency
     }
 }
