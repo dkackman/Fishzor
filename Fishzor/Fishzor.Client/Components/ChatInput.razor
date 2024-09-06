@@ -1,6 +1,7 @@
 @implements IDisposable
 @rendermode InteractiveWebAssembly
 @inject IJSRuntime JSRuntime
+@inject FishTankState FishTankState
 
 <div class="chat-input-container">
     <input type="text" class="chat-input" @ref="inputElement" @bind="chatMessage" @bind:event="oninput"
@@ -88,7 +89,7 @@
     {
         if (!string.IsNullOrWhiteSpace(chatMessage))
         {
-            await OnMessageSubmit.InvokeAsync(chatMessage);
+            await FishTankState.SendMessageAsync(chatMessage);
             chatMessage = "";
             StateHasChanged();
             await FocusInput(); // Re-focus after sending

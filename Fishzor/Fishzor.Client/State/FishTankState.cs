@@ -33,6 +33,13 @@ public class FishTankState : IAsyncDisposable
             OnStateChanged?.Invoke();
         });
 
+        _hubConnection.On<FishMessage>("ReceiveMessage", (message) =>
+        {
+            Messages.Add(message);
+            OnMessageReceived?.Invoke(message);
+            OnStateChanged?.Invoke();
+        });
+
         _hubConnection.Reconnecting += error =>
         {
             OnStateChanged?.Invoke();
@@ -57,6 +64,18 @@ public class FishTankState : IAsyncDisposable
         if (_hubConnection is not null)
         {
             await _hubConnection.DisposeAsync();
+        }
+    }
+
+    public List<FishMessage> Messages { get; } = [];
+
+    public event Action<FishMessage>? OnMessageReceived;
+
+    public async Task SendMessageAsync(string message)
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.SendAsync("BroadcastMessage", message);
         }
     }
 }

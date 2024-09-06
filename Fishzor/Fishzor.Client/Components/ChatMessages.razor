@@ -1,0 +1,51 @@
+@inject FishTankState FishTankState
+
+<div class="chat-messages">
+    @foreach (var message in FishTankState.Messages)
+    {
+        <div class="message @(message.ClientId == FishTankState.ClientConnectionId ? "own-message" : "other-message")">
+            <span class="message-text">@message.Message</span>
+        </div>
+    }
+</div>
+
+<style>
+    .chat-messages {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        max-width: 300px;
+        max-height: 50vh;
+        overflow-y: auto;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .message {
+        margin-bottom: 10px;
+        padding: 5px 10px;
+        border-radius: 15px;
+    }
+
+    .own-message {
+        background-color: #dcf8c6;
+        align-self: flex-end;
+    }
+
+    .other-message {
+        background-color: #f2f2f2;
+        align-self: flex-start;
+    }
+
+    .message-text {
+        word-wrap: break-word;
+    }
+</style>
+
+@code {
+    protected override void OnInitialized()
+    {
+        FishTankState.OnMessageReceived += (message) => InvokeAsync(StateHasChanged);
+    }
+}
