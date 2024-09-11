@@ -1,4 +1,3 @@
-@implements IDisposable
 @rendermode InteractiveWebAssembly
 @inject IJSRuntime JSRuntime
 @inject FishTankState FishTankState
@@ -102,10 +101,5 @@
         {
             await SubmitMessage();
         }
-    }
-
-    public void Dispose()
-    {
-        Console.WriteLine("ChatInput component disposed");
     }
 }
