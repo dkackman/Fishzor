@@ -13,8 +13,6 @@ public class FishTankState : IAsyncDisposable
 
     public event Action? OnStateChanged;
 
-    private const int MessageDisplayTimeMS = 7500;
-
     public async Task InitializeAsync(string hubUrl)
     {
         _hubUrl = hubUrl;
@@ -88,7 +86,7 @@ public class FishTankState : IAsyncDisposable
             fish.IsMessageVisible = true;
             OnStateChanged?.Invoke();
 
-            await Task.Delay(MessageDisplayTimeMS);
+            await Task.Delay(5000); // Display message for 5 seconds
 
             fish.IsMessageVisible = false;
             OnStateChanged?.Invoke();
