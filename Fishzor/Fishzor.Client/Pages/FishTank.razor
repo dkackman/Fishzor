@@ -29,9 +29,8 @@
     @foreach (var fish in FishTankState.Fish)
     {
         <Fish Color="@fish.Color" Scale="@fish.Scale" IsClientFish="@(fish.Id == FishTankState.ClientConnectionId)"
-            @key="fish.Id" />
+            CurrentMessage="@fish.CurrentMessage" IsMessageVisible="@fish.IsMessageVisible" @key="fish.Id" />
     }
-    <ChatMessages />
 </div>
 
 @code {

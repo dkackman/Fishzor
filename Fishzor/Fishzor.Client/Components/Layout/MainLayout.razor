@@ -7,7 +7,7 @@
             @Body
         </article>
     </main>
-    <ChatInput OnMessageSubmit="@HandleMessageSubmit" />
+    <ChatInput />
 </div>
 
 <style>
@@ -33,20 +33,3 @@
         position: relative;
     }
 </style>
-
-@code {
-    private string lastReceivedMessage = "";
-
-    protected override void OnInitialized()
-    {
-        Console.WriteLine("MainLayout initialized");
-    }
-
-    private void HandleMessageSubmit(string message)
-    {
-        Console.WriteLine($"Received message in MainLayout: {message}");
-        lastReceivedMessage = message;
-        StateHasChanged();
-        // TODO: Implement chat message sending logic
-    }
-}

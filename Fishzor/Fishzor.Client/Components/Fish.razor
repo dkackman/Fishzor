@@ -8,6 +8,34 @@
 <img src="@FishImagePath" alt="@Color" @ref="fishElement"
     style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
+<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden")"
+    style="left: @(Direction == Direction.Right ? Position.Left + WIDTH / 2 : Position.Left - WIDTH / 2)px; top: @(Position.Top - 20)px;">
+    @CurrentMessage
+</div>
+
+<style>
+    .message-bubble {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        /* Center the bubble */
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 5px 10px;
+        max-width: 150px;
+        word-wrap: break-word;
+        transition: opacity 0.5s ease-in-out;
+    }
+
+    .message-bubble.hidden {
+        opacity: 0;
+    }
+
+    .message-bubble.visible {
+        opacity: 1;
+    }
+</style>
 <script>
     function makeDraggable(element, dotNetRef) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -60,6 +88,12 @@
 
     [Parameter]
     public string Scale { get; set; } = "100.0";
+
+    [Parameter]
+    public string CurrentMessage { get; set; } = "";
+
+    [Parameter]
+    public bool IsMessageVisible { get; set; } = false;
 
     public string FrameDuration
     {

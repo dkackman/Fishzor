@@ -13,6 +13,8 @@ public class FishTankState : IAsyncDisposable
 
     public event Action? OnStateChanged;
 
+    private const int MessageDisplayTimeMS = 7500;
+
     public async Task InitializeAsync(string hubUrl)
     {
         _hubUrl = hubUrl;
@@ -33,9 +35,9 @@ public class FishTankState : IAsyncDisposable
             OnStateChanged?.Invoke();
         });
 
-        _hubConnection.On<FishMessage>("ReceiveMessage", (message) =>
+        _hubConnection.On<FishMessage>("ReceiveMessage", async (message) =>
         {
-            Messages.Add(message);
+            await DisplayMessageForFish(message.ClientId, message.Message);
             OnMessageReceived?.Invoke(message);
             OnStateChanged?.Invoke();
         });
@@ -67,8 +69,6 @@ public class FishTankState : IAsyncDisposable
         }
     }
 
-    public List<FishMessage> Messages { get; } = [];
-
     public event Action<FishMessage>? OnMessageReceived;
 
     public async Task SendMessageAsync(string message)
@@ -76,6 +76,22 @@ public class FishTankState : IAsyncDisposable
         if (_hubConnection is not null)
         {
             await _hubConnection.SendAsync("BroadcastMessage", message);
+        }
+    }
+
+    public async Task DisplayMessageForFish(string fishId, string message)
+    {
+        var fish = Fish.FirstOrDefault(f => f.Id == fishId);
+        if (fish != null)
+        {
+            fish.CurrentMessage = message;
+            fish.IsMessageVisible = true;
+            OnStateChanged?.Invoke();
+
+            await Task.Delay(MessageDisplayTimeMS);
+
+            fish.IsMessageVisible = false;
+            OnStateChanged?.Invoke();
         }
     }
 }
