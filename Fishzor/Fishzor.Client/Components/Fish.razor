@@ -5,10 +5,11 @@
 @using Fishzor.Client.Components
 @inject IJSRuntime JSRuntime
 
-<img src="@FishImagePath" alt="@Color" @ref="fishElement"
+<img src="@FishImagePath" alt="@Color" @ref="fishElement" aria-label="@($"{Color} fish")"
     style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
-<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden")" style="@GetBubblePosition()">
+<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden")" style="@GetBubblePosition()" role="status"
+    aria-live="polite">
     @CurrentMessage
 </div>
 

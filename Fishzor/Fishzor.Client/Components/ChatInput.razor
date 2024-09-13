@@ -4,9 +4,10 @@
 
 <div class="chat-input-container">
     <input type="text" class="chat-input" @ref="inputElement" @bind="chatMessage" @bind:event="oninput"
-        @onkeyup="HandleKeyPress" maxlength="40" placeholder="Type a short message..." />
-    <button class="chat-submit" @onclick="SubmitMessage"
-        disabled="@string.IsNullOrWhiteSpace(chatMessage)">Send</button>
+        @onkeyup="HandleKeyPress" maxlength="40" placeholder="Type a short message..."
+        aria-label="Chat message input" />
+    <button class="chat-submit" @onclick="SubmitMessage" disabled="@string.IsNullOrWhiteSpace(chatMessage)"
+        aria-label="Send message">Send</button>
 </div>
 
 <style>
