@@ -1,6 +1,7 @@
 using Fishzor.Components;
 using Fishzor.Services;
 using Fishzor.Client.State;
+using Fishzor.Client.Services;
 using Fishzor.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Net.Http.Headers;
@@ -35,6 +36,7 @@ public static class WebApplicationExtensions
         builder.Services
             .AddSingleton<FishService>()
             .AddScoped<FishTankState>()
+            .AddScoped<MessageDispatcher>()
             .AddResponseCompression(options =>
             {
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]);

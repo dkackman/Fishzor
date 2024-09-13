@@ -1,6 +1,7 @@
 @rendermode InteractiveWebAssembly
+@using Fishzor.Client.Services
 @inject IJSRuntime JSRuntime
-@inject FishTankState FishTankState
+@inject MessageDispatcher MessageDispatcher
 
 <form @onsubmit="SubmitMessage" class="chat-input-container" aria-label="Chat message input">
     <input id="chat-message" type="text" class="chat-input" @ref="inputElement" @bind="chatMessage"
@@ -69,9 +70,6 @@
     private string chatMessage = "";
     private ElementReference inputElement;
 
-    [Parameter]
-    public EventCallback<string> OnMessageSubmit { get; set; }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -87,21 +85,10 @@
 
     private async Task SubmitMessage()
     {
-        var cleanedMessage = chatMessage.Trim();
-        if (!string.IsNullOrWhiteSpace(cleanedMessage))
-        {
-            Console.WriteLine("Sending message");
-            await FishTankState.SendMessageAsync(cleanedMessage);
-            chatMessage = "";
-            StateHasChanged();
-            await FocusInput(); // Re-focus after sending
-        }
-        else
-        {
-            Console.WriteLine("SubmitMessage: Empty message, not sent");
-        }
-
-        Console.WriteLine("SubmitMessage completed");
+        await MessageDispatcher.DispatchMessageAsync(chatMessage);
+        chatMessage = "";
+        StateHasChanged();
+        await FocusInput(); // Re-focus after sending
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
