@@ -18,14 +18,28 @@
         position: absolute;
         top: 50%;
         transform: translate(-50%, -50%);
-        /* Center the bubble */
-        background-color: white;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        padding: 5px 10px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        padding: 10px;
         max-width: 150px;
         word-wrap: break-word;
         transition: opacity 0.5s ease-in-out;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(2px);
+    }
+
+    .message-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 10px;
+        height: 10px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
     }
 
     .message-bubble.hidden {
