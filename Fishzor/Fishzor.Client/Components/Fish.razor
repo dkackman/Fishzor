@@ -27,6 +27,7 @@
         transition: opacity 0.5s ease-in-out;
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.3);
         backdrop-filter: blur(2px);
+        animation: float 4s infinite ease-in-out;
     }
 
     .message-bubble::before,
@@ -36,7 +37,6 @@
         background-color: rgba(255, 255, 255, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.6);
         border-radius: 50%;
-        animation: float 3s infinite ease-in-out;
     }
 
     .message-bubble::before {
@@ -44,7 +44,7 @@
         height: 15px;
         bottom: -20px;
         left: 20%;
-        animation-delay: 0.5s;
+        animation: float 3s infinite ease-in-out 0.5s;
     }
 
     .message-bubble::after {
@@ -52,15 +52,18 @@
         height: 10px;
         bottom: -35px;
         left: 40%;
-        animation-delay: 1s;
+        animation: float 3s infinite ease-in-out 1s;
     }
 
     @@keyframes float {
-        0%, 100% {
-            transform: translateY(0);
+
+        0%,
+        100% {
+            transform: translate(-50%, -50%);
         }
+
         50% {
-            transform: translateY(-10px);
+            transform: translate(-50%, -60%);
         }
     }
 
