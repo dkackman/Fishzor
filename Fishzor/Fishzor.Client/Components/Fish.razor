@@ -18,28 +18,50 @@
         position: absolute;
         top: 50%;
         transform: translate(-50%, -50%);
-        background-color: rgba(255, 255, 255, 0.7);
-        border: 2px solid rgba(255, 255, 255, 0.9);
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.6);
         border-radius: 50%;
         padding: 10px;
         max-width: 150px;
         word-wrap: break-word;
         transition: opacity 0.5s ease-in-out;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.3);
         backdrop-filter: blur(2px);
     }
 
+    .message-bubble::before,
     .message-bubble::after {
         content: '';
         position: absolute;
-        bottom: -5px;
-        left: 50%;
-        transform: translateX(-50%);
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        animation: float 3s infinite ease-in-out;
+    }
+
+    .message-bubble::before {
+        width: 15px;
+        height: 15px;
+        bottom: -20px;
+        left: 20%;
+        animation-delay: 0.5s;
+    }
+
+    .message-bubble::after {
         width: 10px;
         height: 10px;
-        background-color: rgba(255, 255, 255, 0.7);
-        border: 2px solid rgba(255, 255, 255, 0.9);
-        border-radius: 50%;
+        bottom: -35px;
+        left: 40%;
+        animation-delay: 1s;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
     }
 
     .message-bubble.hidden {
