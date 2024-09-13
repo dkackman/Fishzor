@@ -8,8 +8,7 @@
 <img src="@FishImagePath" alt="@Color" @ref="fishElement"
     style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
-<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden")"
-    style="left: @(Direction == Direction.Right ? Position.Left + WIDTH / 2 : Position.Left - WIDTH / 2)px; top: @(Position.Top - 20)px;">
+<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden")" style="@GetBubblePosition()">
     @CurrentMessage
 </div>
 
@@ -168,6 +167,8 @@
     private const int HEIGHT = 84;
     private const int WIDTH = 144;
 
+    private const int BUBBLE_OFFSET = 72; // Half of the WIDTH constant
+
     [JSInvokable]
     public async Task OnDraggingStart()
     {
@@ -195,6 +196,14 @@
         // choose a new velocity and change direction
         var direction = FishVelocity.dx > 0 ? -1 : 1;
         FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
+    }
+
+    public string GetBubblePosition()
+    {
+        var leftPosition = Direction == Direction.Right
+        ? Position.Left + BUBBLE_OFFSET
+        : Position.Left;// - BUBBLE_OFFSET / 2;
+        return $"left: {leftPosition}px; top: {Position.Top - 20}px;";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
