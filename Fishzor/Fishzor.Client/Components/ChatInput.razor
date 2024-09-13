@@ -2,13 +2,13 @@
 @inject IJSRuntime JSRuntime
 @inject FishTankState FishTankState
 
-<div class="chat-input-container">
-    <input type="text" class="chat-input" @ref="inputElement" @bind="chatMessage" @bind:event="oninput"
-        @onkeyup="HandleKeyPress" maxlength="40" placeholder="Type a short message..."
+<form @onsubmit="SubmitMessage" class="chat-input-container" aria-label="Chat message input">
+    <input id="chat-message" type="text" class="chat-input" @ref="inputElement" @bind="chatMessage"
+        @bind:event="oninput" @onkeyup="HandleKeyPress" maxlength="40" placeholder="Type a short message..."
         aria-label="Chat message input" />
-    <button class="chat-submit" @onclick="SubmitMessage" disabled="@string.IsNullOrWhiteSpace(chatMessage)"
+    <button type="submit" class="chat-submit" disabled="@string.IsNullOrWhiteSpace(chatMessage)"
         aria-label="Send message">Send</button>
-</div>
+</form>
 
 <style>
     .chat-input-container {
@@ -70,6 +70,9 @@
     private ElementReference inputElement;
 
     [Parameter]
+    public string AriaLabel { get; set; } = "Chat message input";
+
+    [Parameter]
     public EventCallback<string> OnMessageSubmit { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -87,9 +90,10 @@
 
     private async Task SubmitMessage()
     {
-        if (!string.IsNullOrWhiteSpace(chatMessage))
+        var cleanedMessage = chatMessage.Trim();
+        if (!string.IsNullOrWhiteSpace(cleanedMessage))
         {
-            await FishTankState.SendMessageAsync(chatMessage);
+            await FishTankState.SendMessageAsync(cleanedMessage);
             chatMessage = "";
             StateHasChanged();
             await FocusInput(); // Re-focus after sending
