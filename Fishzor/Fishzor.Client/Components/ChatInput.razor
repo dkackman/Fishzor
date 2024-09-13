@@ -70,9 +70,6 @@
     private ElementReference inputElement;
 
     [Parameter]
-    public string AriaLabel { get; set; } = "Chat message input";
-
-    [Parameter]
     public EventCallback<string> OnMessageSubmit { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -93,11 +90,18 @@
         var cleanedMessage = chatMessage.Trim();
         if (!string.IsNullOrWhiteSpace(cleanedMessage))
         {
+            Console.WriteLine("Sending message");
             await FishTankState.SendMessageAsync(cleanedMessage);
             chatMessage = "";
             StateHasChanged();
             await FocusInput(); // Re-focus after sending
         }
+        else
+        {
+            Console.WriteLine("SubmitMessage: Empty message, not sent");
+        }
+
+        Console.WriteLine("SubmitMessage completed");
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
