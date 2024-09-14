@@ -24,6 +24,8 @@ public class MessageDispatcher(FishTankState fishTankState)
         }
     }
 
+    public event Action<string>? OnHelpRequested;
+
     private void ProcessCommand(string command)
     {
         var parts = command.Split(' ');
@@ -47,7 +49,7 @@ public class MessageDispatcher(FishTankState fishTankState)
 /help - Display this help message
 // Add more commands to this list as you implement them
 ";
-        Console.WriteLine(helpMessage);
+        OnHelpRequested?.Invoke(helpMessage);
         // You might want to return this message or use an event to display it in the UI
     }
 }

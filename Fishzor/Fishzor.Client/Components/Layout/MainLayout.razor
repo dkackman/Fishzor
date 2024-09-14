@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using Fishzor.Client.Components
+@using Fishzor.Client.Services
+@inject MessageDispatcher MessageDispatcher
+@implements IDisposable
 
 <div class="page" style="height: 100vh;">
     <main style="height: 100%;">
@@ -8,6 +11,17 @@
         </article>
     </main>
     <ChatInput />
+    
+    @if (!string.IsNullOrEmpty(_helpMessage))
+    {
+        <div class="help-overlay">
+            <div class="help-content">
+                <h3>Help</h3>
+                <pre>@_helpMessage</pre>
+                <button @onclick="CloseHelpOverlay">Close</button>
+            </div>
+        </div>
+    }
 </div>
 
 <style>
@@ -32,4 +46,52 @@
     #mainView>* {
         position: relative;
     }
+
+    .help-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .help-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        max-width: 80%;
+        max-height: 80%;
+        overflow-y: auto;
+    }
 </style>
+
+@code {
+    private string _helpMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        MessageDispatcher.OnHelpRequested += ShowHelpOverlay;
+    }
+
+    private void ShowHelpOverlay(string message)
+    {
+        _helpMessage = message;
+        StateHasChanged();
+    }
+
+    private void CloseHelpOverlay()
+    {
+        _helpMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        MessageDispatcher.OnHelpRequested -= ShowHelpOverlay;
+    }
+}
