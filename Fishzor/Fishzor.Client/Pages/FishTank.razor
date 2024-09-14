@@ -25,8 +25,8 @@
     <ChatInput />
 </div>
 
-<FloatingMessage ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopLeft"
-    OnClose="@CloseFloatingMessage" />
+<FloatingToast ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopLeft"
+    OnClose="@CloseToast" />
 
 <style>
     .fish-tank-container {
@@ -83,7 +83,7 @@
 
     protected override void OnInitialized()
     {
-        MessageDispatcher.OnFloatingMessageRequested += ShowFloatingMessage;
+        MessageDispatcher.OnToastRequested += ShowToast;
         MessageDispatcher.OnOpenUrlRequested += OpenUrl;
         FishTankState.OnStateChanged += StateHasChanged;
     }
@@ -91,17 +91,17 @@
     public void Dispose()
     {
         FishTankState.OnStateChanged -= StateHasChanged;
-        MessageDispatcher.OnFloatingMessageRequested -= ShowFloatingMessage;
+        MessageDispatcher.OnToastRequested -= ShowToast;
         MessageDispatcher.OnOpenUrlRequested -= OpenUrl;
     }
 
-    private void ShowFloatingMessage(ToastMessage message)
+    private void ShowToast(ToastMessage message)
     {
         _toastMessage = message;
         StateHasChanged();
     }
 
-    private void CloseFloatingMessage()
+    private void CloseToast()
     {
         _toastMessage = null;
         StateHasChanged();

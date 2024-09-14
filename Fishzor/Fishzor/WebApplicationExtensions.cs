@@ -8,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Threading.RateLimiting;
 using System.Text;
+using Ganss.Xss;
 
 namespace Fishzor;
 
@@ -35,6 +36,7 @@ public static class WebApplicationExtensions
             .AddSignalR();
         builder.Services
             .AddSingleton<FishService>()
+            .AddSingleton<HtmlSanitizer>()
             .AddScoped<FishTankState>()
             .AddScoped<MessageDispatcher>()
             .AddResponseCompression(options =>

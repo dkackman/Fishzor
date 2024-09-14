@@ -3,11 +3,13 @@ using Fishzor.Client.State;
 using Fishzor.Client.Services;
 using Fishzor.Client;
 using Microsoft.Extensions.Logging.Configuration;
+using Ganss.Xss;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddScoped<FishTankState>();
 builder.Services.AddScoped<MessageDispatcher>();
+builder.Services.AddSingleton<HtmlSanitizer>();
 
 // Configure logging
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));

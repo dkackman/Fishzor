@@ -1,24 +1,26 @@
 @using Fishzor.Client.Components
+@using Ganss.Xss
+@inject HtmlSanitizer Sanitizer
 
 @if (IsVisible && ToastMessage != null)
 {
     <div class="@GetPositionClasses()">
         <div class="toast show custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header custom-toast-header">
-                <strong class="me-auto">@ToastMessage.Title</strong>
+                <strong class="me-auto">@((MarkupString)Sanitizer.Sanitize(ToastMessage.Title))</strong>
                 @if (ShowCloseButton)
                 {
                     <button type="button" class="btn-close custom-close" @onclick="Close" aria-label="Close"></button>
                 }
             </div>
             <div class="toast-body custom-toast-body">
-                <p>@ToastMessage.Caption</p>
+                <p>@((MarkupString)Sanitizer.Sanitize(ToastMessage.Caption))</p>
                 @if (ToastMessage.Messages.Any())
                 {
                     <ul class="list-unstyled mb-0 ps-3">
                         @foreach (var message in ToastMessage.Messages)
                         {
-                            <li class="ms-3">• @message</li>
+                            <li class="ms-3">• @((MarkupString)Sanitizer.Sanitize(message))</li>
                         }
                     </ul>
                 }

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HtmlSanitizer" Version="8.1.870" />
     <ProjectReference Include="..\Fishzor.Client\Fishzor.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
   </ItemGroup>

@@ -3,7 +3,9 @@
 @using Microsoft.JSInterop
 @using System.Diagnostics
 @using Fishzor.Client.Components
+@using Ganss.Xss
 @inject IJSRuntime JSRuntime
+@inject HtmlSanitizer Sanitizer
 
 <img src="@FishImagePath" alt="@($"{Color} fish")" @ref="fishElement"
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
@@ -11,7 +13,7 @@
 
 <div class="message-bubble @(IsMessageVisible ? "visible" : "hidden")" style="@GetBubblePosition()" role="status"
     aria-live="polite">
-    @CurrentMessage
+    @((MarkupString)Sanitizer.Sanitize(CurrentMessage))
 </div>
 
 <style>

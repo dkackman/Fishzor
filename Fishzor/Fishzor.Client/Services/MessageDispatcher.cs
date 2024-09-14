@@ -20,12 +20,12 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
             }
             else
             {
-                await _fishTankState.SendMessageAsync(chatMessage.Message);
+                await _fishTankState.SendMessageAsync(chatMessage);
             }
         }
     }
 
-    public event Action<ToastMessage>? OnFloatingMessageRequested;
+    public event Action<ToastMessage>? OnToastRequested;
     public event Action<string>? OnOpenUrlRequested;
 
     private void ProcessCommand(string command)
@@ -48,16 +48,15 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
 
     private void DisplayHelpMessage()
     {
-        IEnumerable<string> helpMessages = [
-            "/about - Show the about page",
-            "/help - Display this help message",
-            "/shout - Shout a chat message",
-            ];
-        OnFloatingMessageRequested?.Invoke(new ToastMessage
+        OnToastRequested?.Invoke(new ToastMessage
         {
             Title = "Help",
             Caption = "Available commands",
-            Messages = helpMessages,
+            Messages = [
+                "/about - Show the about page",
+                "/help - Display this help",
+                "/shout - Shout a chat message",
+            ],
         });
     }
 }
