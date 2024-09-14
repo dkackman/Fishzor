@@ -2,32 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Blazor App",
-      "type": "blazorwasm",
-      "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/Fishzor/Fishzor/bin/Debug/net8.0/Fishzor.dll",
-      "cwd": "${workspaceFolder}/Fishzor/Fishzor",
-      "browser": "edge"
-    },
-    {
-      "name": ".NET Core Launch",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/Fishzor/Fishzor/bin/Debug/net8.0/Fishzor.dll",
-      "args": [],
-      "cwd": "${workspaceFolder}/Fishzor/Fishzor",
-      "console": "internalConsole",
-      "stopAtEntry": false
-    },
-    {
-      "name": ".NET Core Attach",
-      "type": "coreclr",
-      "request": "attach"
-    },
-    {
-      "name": "Launch Fishzor Server and Debug",
+      "name": "Debug Server",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
@@ -44,8 +19,22 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "sourceFileMap": {
-        "/Views": "${workspaceFolder}/Views"
+        "/Views": "${workspaceFolder}/Fishzor/Fishzor.Client/Pages"
+      },
+      "launchBrowser": {
+        "enabled": true,
+        "args": "${auto-detect-url}",
+        "windows": {
+          "command": "cmd.exe",
+          "args": "/C start msedge ${auto-detect-url}"
+        }
       }
+    },
+    {
+      "name": "Attach and debug client",
+      "type": "blazorwasm",
+      "request": "attach",
+      "url": "https://localhost:7233/"
     }
   ]
 }

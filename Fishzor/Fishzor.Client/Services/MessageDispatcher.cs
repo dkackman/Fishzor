@@ -2,9 +2,10 @@ using Fishzor.Client.State;
 
 namespace Fishzor.Client.Services;
 
-public class MessageDispatcher(FishTankState fishTankState)
+public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispatcher> logger)
 {
     private readonly FishTankState _fishTankState = fishTankState;
+    private readonly ILogger<MessageDispatcher> _logger = logger;
 
     public async Task DispatchMessageAsync(string message)
     {
@@ -30,7 +31,7 @@ public class MessageDispatcher(FishTankState fishTankState)
     {
         var parts = command.Split(' ');
         var commandName = parts[0].ToLower();
-
+        _logger.LogDebug("Processing command: {commandName}", commandName);
         switch (commandName)
         {
             case "/help":
@@ -38,7 +39,7 @@ public class MessageDispatcher(FishTankState fishTankState)
                 break;
             // Add more commands here as needed
             default:
-                Console.WriteLine($"Unknown command: {commandName}");
+                _logger.LogDebug("Unknown command: {commandName}", commandName);
                 break;
         }
     }
