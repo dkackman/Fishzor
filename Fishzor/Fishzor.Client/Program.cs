@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging.Configuration;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped<FishTankState>();
-builder.Services.AddScoped<MessageDispatcher>();
+builder.Services.AddSingleton<FishTankState>();
+builder.Services.AddSingleton<MessageDispatcher>();
 
 // Configure logging
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));

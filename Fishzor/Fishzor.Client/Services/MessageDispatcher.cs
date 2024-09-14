@@ -1,4 +1,5 @@
 using Fishzor.Client.State;
+using Fishzor.Client.Components;
 
 namespace Fishzor.Client.Services;
 
@@ -23,7 +24,7 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
         }
     }
 
-    public event Action<string>? OnHelpRequested;
+    public event Action<ToastMessage>? OnFloatingMessageRequested;
 
     private void ProcessCommand(string command)
     {
@@ -44,11 +45,14 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
 
     private void DisplayHelpMessage()
     {
-        var helpMessage = @"Available commands:
-/help - Display this help message
-// Add more commands to this list as you implement them
-";
-        OnHelpRequested?.Invoke(helpMessage);
+        var helpMessage = "/help - Display this help message";
+        bool isnull = OnFloatingMessageRequested == null;
+        OnFloatingMessageRequested?.Invoke(new ToastMessage
+        {
+            Title = "Help",
+            Caption = "Available commands",
+            Messages = [helpMessage],
+        });
         // You might want to return this message or use an event to display it in the UI
     }
 }

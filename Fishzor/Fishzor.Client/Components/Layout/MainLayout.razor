@@ -11,17 +11,9 @@
         </article>
     </main>
     <ChatInput />
-    
-    @if (!string.IsNullOrEmpty(_helpMessage))
-    {
-        <div class="help-overlay">
-            <div class="help-content">
-                <h3>Help</h3>
-                <pre>@_helpMessage</pre>
-                <button @onclick="CloseHelpOverlay">Close</button>
-            </div>
-        </div>
-    }
+
+    <FloatingMessage ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopRight"
+        OnClose="@CloseFloatingMessage" />
 </div>
 
 <style>
@@ -71,27 +63,27 @@
 </style>
 
 @code {
-    private string _helpMessage = string.Empty;
+    private ToastMessage? _toastMessage = null;
 
     protected override void OnInitialized()
     {
-        MessageDispatcher.OnHelpRequested += ShowHelpOverlay;
+        MessageDispatcher.OnFloatingMessageRequested += ShowFloatingMessage;
     }
 
-    private void ShowHelpOverlay(string message)
+    private void ShowFloatingMessage(ToastMessage message)
     {
-        _helpMessage = message;
+        _toastMessage = message;
         StateHasChanged();
     }
 
-    private void CloseHelpOverlay()
+    private void CloseFloatingMessage()
     {
-        _helpMessage = string.Empty;
+        _toastMessage = null;
         StateHasChanged();
     }
 
     public void Dispose()
     {
-        MessageDispatcher.OnHelpRequested -= ShowHelpOverlay;
+        MessageDispatcher.OnFloatingMessageRequested -= ShowFloatingMessage;
     }
 }
