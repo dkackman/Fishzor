@@ -78,7 +78,6 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
     {
         if (_hubConnection is not null)
         {
-            _logger.LogDebug("Sending message: {message}", message);
             await _hubConnection.SendAsync("BroadcastMessage", message);
         }
     }
@@ -94,7 +93,7 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
             fish.IsMessageVisible = true;
             OnStateChanged?.Invoke();
 
-            await Task.Delay(MessageDisplayDurationMS); 
+            await Task.Delay(MessageDisplayDurationMS);
 
             fish.IsMessageVisible = false;
             OnStateChanged?.Invoke();

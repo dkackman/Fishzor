@@ -10,16 +10,17 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
 
     public async Task DispatchMessageAsync(string message)
     {
-        var cleanedMessage = message.Trim();
-        if (!string.IsNullOrWhiteSpace(cleanedMessage))
+        var chatMessage = ChatMessage.FromMessage(message);
+
+        if (!chatMessage.IsEmpty)
         {
-            if (cleanedMessage.StartsWith('/'))
+            if (chatMessage.IsCommand)
             {
-                ProcessCommand(cleanedMessage);
+                ProcessCommand(chatMessage.Modifier);
             }
             else
             {
-                await _fishTankState.SendMessageAsync(cleanedMessage);
+                await _fishTankState.SendMessageAsync(chatMessage.Message);
             }
         }
     }
@@ -29,20 +30,18 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
 
     private void ProcessCommand(string command)
     {
-        var parts = command.Split(' ');
-        var commandName = parts[0].ToLower();
-        _logger.LogInformation("Processing command: {commandName}", commandName);
-        switch (commandName)
+        _logger.LogInformation("Processing command: {commandName}", command);
+        switch (command)
         {
-            case "/help":
+            case "help":
                 DisplayHelpMessage();
                 break;
-            case "/about":
+            case "about":
                 OnOpenUrlRequested?.Invoke("https://github.com/dkackman/Fishzor");
                 break;
             // Add more commands here as needed
             default:
-                _logger.LogDebug("Unknown command: {commandName}", commandName);
+                _logger.LogDebug("Unknown command: {commandName}", command);
                 break;
         }
     }
@@ -51,7 +50,8 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
     {
         IEnumerable<string> helpMessages = [
             "/about - Show the about page",
-            "/help - Display this help message"
+            "/help - Display this help message",
+            "/shout - Shout a chat message",
             ];
         OnFloatingMessageRequested?.Invoke(new ToastMessage
         {
