@@ -25,6 +25,7 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
     }
 
     public event Action<ToastMessage>? OnFloatingMessageRequested;
+    public event Action<string>? OnOpenUrlRequested;
 
     private void ProcessCommand(string command)
     {
@@ -36,6 +37,9 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
             case "/help":
                 DisplayHelpMessage();
                 break;
+            case "/about":
+                OnOpenUrlRequested?.Invoke("https://github.com/dkackman/Fishzor");
+                break;
             // Add more commands here as needed
             default:
                 _logger.LogDebug("Unknown command: {commandName}", commandName);
@@ -45,14 +49,15 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
 
     private void DisplayHelpMessage()
     {
-        var helpMessage = "/help - Display this help message";
-        bool isnull = OnFloatingMessageRequested == null;
+        IEnumerable<string> helpMessages = [
+            "/about - Show the about page",
+            "/help - Display this help message"
+            ];
         OnFloatingMessageRequested?.Invoke(new ToastMessage
         {
             Title = "Help",
             Caption = "Available commands",
-            Messages = [helpMessage],
+            Messages = helpMessages,
         });
-        // You might want to return this message or use an event to display it in the UI
     }
 }

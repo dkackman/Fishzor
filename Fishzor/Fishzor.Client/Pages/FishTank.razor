@@ -5,7 +5,7 @@
 @using Fishzor.Client.State
 @inject FishTankState FishTankState
 @inject MessageDispatcher MessageDispatcher
-@implements IDisposable
+@inject IJSRuntime JSRuntime
 
 <div class="fish-tank-container">
     <div id="fishTank" aria-label="Fish tank with swimming fish">
@@ -25,7 +25,7 @@
     <ChatInput />
 </div>
 
-<FloatingMessage ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopRight"
+<FloatingMessage ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopLeft"
     OnClose="@CloseFloatingMessage" />
 
 <style>
@@ -84,6 +84,7 @@
     protected override void OnInitialized()
     {
         MessageDispatcher.OnFloatingMessageRequested += ShowFloatingMessage;
+        MessageDispatcher.OnOpenUrlRequested += OpenUrl;
         FishTankState.OnStateChanged += StateHasChanged;
     }
 
@@ -91,6 +92,7 @@
     {
         FishTankState.OnStateChanged -= StateHasChanged;
         MessageDispatcher.OnFloatingMessageRequested -= ShowFloatingMessage;
+        MessageDispatcher.OnOpenUrlRequested -= OpenUrl;
     }
 
     private void ShowFloatingMessage(ToastMessage message)
@@ -103,5 +105,10 @@
     {
         _toastMessage = null;
         StateHasChanged();
+    }
+
+    private async void OpenUrl(string url)
+    {
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
     }
 }
