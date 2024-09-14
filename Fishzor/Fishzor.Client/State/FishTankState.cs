@@ -2,19 +2,23 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Fishzor.Client.State;
 
-public class FishTankState : IAsyncDisposable
+public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 {
     private HubConnection? _hubConnection;
     private string _hubUrl = string.Empty;
     private IDisposable? _onSubscription;
+    private readonly ILogger<FishTankState> _logger = logger;
 
     public string ClientConnectionId { get; private set; } = string.Empty;
     public IReadOnlyList<FishState> Fish { get; private set; } = [];
 
     public event Action? OnStateChanged;
 
+    private const int MessageDisplayDurationMS = 10000;
+
     public async Task InitializeAsync(string hubUrl)
     {
+        _logger.LogInformation("Initializing FishTankState with hub URL: {hubUrl}", hubUrl);
         _hubUrl = hubUrl;
         await ConnectToHub();
     }
@@ -55,6 +59,7 @@ public class FishTankState : IAsyncDisposable
 
         await _hubConnection.StartAsync();
         ClientConnectionId = _hubConnection.ConnectionId!;
+        _logger.LogDebug("ClientId connected: {ClientConnectionId}", ClientConnectionId);
     }
 
     public async ValueTask DisposeAsync()
@@ -73,12 +78,15 @@ public class FishTankState : IAsyncDisposable
     {
         if (_hubConnection is not null)
         {
+            _logger.LogDebug("Sending message: {message}", message);
             await _hubConnection.SendAsync("BroadcastMessage", message);
         }
     }
 
     public async Task DisplayMessageForFish(string fishId, string message)
     {
+        _logger.LogDebug("Received message from: {fishId}", fishId);
+
         var fish = Fish.FirstOrDefault(f => f.Id == fishId);
         if (fish != null)
         {
@@ -86,7 +94,7 @@ public class FishTankState : IAsyncDisposable
             fish.IsMessageVisible = true;
             OnStateChanged?.Invoke();
 
-            await Task.Delay(5000); // Display message for 5 seconds
+            await Task.Delay(MessageDisplayDurationMS); 
 
             fish.IsMessageVisible = false;
             OnStateChanged?.Invoke();

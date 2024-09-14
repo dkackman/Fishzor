@@ -10,11 +10,12 @@
       "args": [],
       "cwd": "${workspaceFolder}/Fishzor/Fishzor",
       "stopAtEntry": false,
-      "serverReadyAction": {
-        "action": "openExternally",
-        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-        "uriFormat": "%s/"
-      },
+      // "serverReadyAction": {
+      //   "action": "openExternally",
+      //   "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+      //   "uriFormat": "%s/",
+      //   "killOnServerStop": true
+      // },
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -35,6 +36,15 @@
       "type": "blazorwasm",
       "request": "attach",
       "url": "https://localhost:7233/"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Server and Client",
+      "configurations": [
+        "Debug Server",
+        "Attach and debug client"
+      ]
     }
   ]
 }

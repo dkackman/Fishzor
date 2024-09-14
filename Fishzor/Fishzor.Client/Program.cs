@@ -11,13 +11,7 @@ builder.Services.AddScoped<MessageDispatcher>();
 
 // Configure logging
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
-builder.Logging.Services.AddSingleton<ILoggerProvider, BrowserConsoleLoggerProvider>();
-var isDev = builder.HostEnvironment.IsDevelopment();
-//if (isDev)
-{
-    builder.Logging.SetMinimumLevel(LogLevel.Debug);
-}
-
+builder.Logging.SetMinimumLevel(LogLevel.Trace);
 var host = builder.Build();
 
 var logger = host.Services.GetRequiredService<ILoggerFactory>()
@@ -25,8 +19,7 @@ var logger = host.Services.GetRequiredService<ILoggerFactory>()
 
 var fishTankState = host.Services.GetRequiredService<FishTankState>();
 
-
-string baseAddress = isDev ? "https://localhost:7233/" : builder.HostEnvironment.BaseAddress;
+var baseAddress = builder.HostEnvironment.IsDevelopment() ? "https://localhost:7233/" : builder.HostEnvironment.BaseAddress;
 await fishTankState.InitializeAsync($"{baseAddress}fishhub");
 
 await host.RunAsync();

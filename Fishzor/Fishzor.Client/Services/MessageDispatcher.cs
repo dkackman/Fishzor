@@ -10,18 +10,16 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
     public async Task DispatchMessageAsync(string message)
     {
         var cleanedMessage = message.Trim();
-        if (string.IsNullOrWhiteSpace(cleanedMessage))
+        if (!string.IsNullOrWhiteSpace(cleanedMessage))
         {
-            return;
-        }
-
-        if (cleanedMessage.StartsWith('/'))
-        {
-            ProcessCommand(cleanedMessage);
-        }
-        else
-        {
-            await _fishTankState.SendMessageAsync(cleanedMessage);
+            if (cleanedMessage.StartsWith('/'))
+            {
+                ProcessCommand(cleanedMessage);
+            }
+            else
+            {
+                await _fishTankState.SendMessageAsync(cleanedMessage);
+            }
         }
     }
 
@@ -31,7 +29,7 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
     {
         var parts = command.Split(' ');
         var commandName = parts[0].ToLower();
-        _logger.LogDebug("Processing command: {commandName}", commandName);
+        _logger.LogInformation("Processing command: {commandName}", commandName);
         switch (commandName)
         {
             case "/help":
