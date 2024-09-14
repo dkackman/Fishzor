@@ -1,22 +1,24 @@
 ﻿@inherits LayoutComponentBase
-@using Fishzor.Client.Components
-@using Fishzor.Client.Services
-@inject MessageDispatcher MessageDispatcher
-@implements IDisposable
 
-<div class="page" style="height: 100vh;">
-    <main style="height: 100%;">
-        <article id="mainView" class="content px-4" style="height:100%">
+<div class="page" style="height: 100vh; display: flex; flex-direction: column;">
+    <main style="flex-grow: 1; overflow: hidden;">
+        <article id="mainView" class="content px-4" style="height: 100%; position: relative;">
             @Body
         </article>
     </main>
-    <ChatInput />
-
-    <FloatingMessage ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopRight"
-        OnClose="@CloseFloatingMessage" />
 </div>
 
 <style>
+    .page {
+        display: flex;
+        flex-direction: column;
+    }
+
+    main {
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
     #mainView {
         background-image: url('images/background.jpg');
         background-size: cover;
@@ -38,52 +40,4 @@
     #mainView>* {
         position: relative;
     }
-
-    .help-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .help-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-        max-width: 80%;
-        max-height: 80%;
-        overflow-y: auto;
-    }
 </style>
-
-@code {
-    private ToastMessage? _toastMessage = null;
-
-    protected override void OnInitialized()
-    {
-        MessageDispatcher.OnFloatingMessageRequested += ShowFloatingMessage;
-    }
-
-    private void ShowFloatingMessage(ToastMessage message)
-    {
-        _toastMessage = message;
-        StateHasChanged();
-    }
-
-    private void CloseFloatingMessage()
-    {
-        _toastMessage = null;
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        MessageDispatcher.OnFloatingMessageRequested -= ShowFloatingMessage;
-    }
-}

@@ -1,15 +1,70 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
-@using global::Fishzor.Client.Components
+@using Fishzor.Client.Components
+@using Fishzor.Client.Services
 @using Fishzor.Client.State
 @inject FishTankState FishTankState
+@inject MessageDispatcher MessageDispatcher
 @implements IDisposable
 
+<div class="fish-tank-container">
+    <div id="fishTank" aria-label="Fish tank with swimming fish">
+        <PageTitle>Fishy fishy fish</PageTitle>
+
+        <div aria-live="polite" class="visually-hidden">
+            There are currently @FishTankState.Fish.Count fish in the tank.
+        </div>
+
+        @foreach (var fish in FishTankState.Fish)
+        {
+            <Fish Color="@fish.Color" Scale="@fish.Scale" IsClientFish="@(fish.Id == FishTankState.ClientConnectionId)"
+                CurrentMessage="@fish.CurrentMessage" IsMessageVisible="@fish.IsMessageVisible" @key="fish.Id" />
+        }
+    </div>
+
+    <ChatInput />
+</div>
+
+<FloatingMessage ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopRight"
+    OnClose="@CloseFloatingMessage" />
+
 <style>
-    #fishTank {
-        width: 100%;
+    .fish-tank-container {
+        display: flex;
+        flex-direction: column;
         height: 100%;
+    }
+
+    #fishTank {
+        flex-grow: 1;
         position: relative;
+        overflow: hidden;
+    }
+
+    .help-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .help-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        max-width: 80%;
+        max-height: 80%;
+        overflow-y: auto;
+    }
+
+    ::deep ChatInput {
+        width: 100%;
     }
 </style>
 
@@ -23,28 +78,30 @@
     }
 </script>
 
-<div id="fishTank" aria-label="Fish tank with swimming fish">
-    <PageTitle>Fishy fishy fish</PageTitle>
-
-    <div aria-live="polite" class="visually-hidden">
-        There are currently @FishTankState.Fish.Count fish in the tank.
-    </div>
-
-    @foreach (var fish in FishTankState.Fish)
-    {
-        <Fish Color="@fish.Color" Scale="@fish.Scale" IsClientFish="@(fish.Id == FishTankState.ClientConnectionId)"
-            CurrentMessage="@fish.CurrentMessage" IsMessageVisible="@fish.IsMessageVisible" @key="fish.Id" />
-    }
-</div>
-
 @code {
+    private ToastMessage? _toastMessage = null;
+
     protected override void OnInitialized()
     {
+        MessageDispatcher.OnFloatingMessageRequested += ShowFloatingMessage;
         FishTankState.OnStateChanged += StateHasChanged;
     }
 
     public void Dispose()
     {
         FishTankState.OnStateChanged -= StateHasChanged;
+        MessageDispatcher.OnFloatingMessageRequested -= ShowFloatingMessage;
+    }
+
+    private void ShowFloatingMessage(ToastMessage message)
+    {
+        _toastMessage = message;
+        StateHasChanged();
+    }
+
+    private void CloseFloatingMessage()
+    {
+        _toastMessage = null;
+        StateHasChanged();
     }
 }
