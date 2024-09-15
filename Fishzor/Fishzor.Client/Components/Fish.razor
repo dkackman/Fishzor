@@ -2,97 +2,14 @@
 @using System.Timers
 @using Microsoft.JSInterop
 @using Fishzor.Client.Components
-@using Ganss.Xss
 @inject IJSRuntime JSRuntime
-@inject HtmlSanitizer Sanitizer
 
 <img src="@FishImagePath" alt="@($"{Color} fish")" @ref="fishElement"
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
     style="@($"position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
-<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden") @CurrentMessage.Modifier"
-    style="@GetBubblePosition()" role="status" aria-live="polite">
-    @((MarkupString)Sanitizer.Sanitize(CurrentMessage.Message))
-</div>
+<MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" Position="@GetBubblePosition()" />
 
-<style>
-    .message-bubble {
-        position: absolute;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        background-color: rgba(255, 255, 255, 0.4);
-        border: 2px solid rgba(255, 255, 255, 0.6);
-        border-radius: 50%;
-        padding: 10px;
-        max-width: 150px;
-        word-wrap: break-word;
-        transition: opacity 0.5s ease-in-out;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(2px);
-        animation: float 4s infinite ease-in-out;
-    }
-
-    .message-bubble::before,
-    .message-bubble::after {
-        content: '';
-        position: absolute;
-        background-color: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 50%;
-    }
-
-    .message-bubble::before {
-        width: 15px;
-        height: 15px;
-        bottom: -20px;
-        left: 20%;
-        animation: float 3s infinite ease-in-out 0.5s;
-    }
-
-    .message-bubble::after {
-        width: 10px;
-        height: 10px;
-        bottom: -35px;
-        left: 40%;
-        animation: float 3s infinite ease-in-out 1s;
-    }
-
-    @@keyframes float {
-
-        0%,
-        100% {
-            transform: translate(-50%, -50%);
-        }
-
-        50% {
-            transform: translate(-50%, -60%);
-        }
-    }
-
-    .message-bubble.hidden {
-        opacity: 0;
-    }
-
-    .message-bubble.visible {
-        opacity: 1;
-    }
-
-    .message-bubble.shout {
-        font-weight: bold;
-        text-transform: uppercase;
-        font-size: larger;
-        color: #FF0000;
-    }
-
-    .message-bubble.whisper {
-        font-weight: italic;
-        text-transform: lowercase;
-        font-size: smaller;
-        color: #60666e;
-    }
-
-    // Add more modifier styles as needed
-</style>
 <script>
     function makeDraggable(element, dotNetRef) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -204,9 +121,9 @@
     public string GetBubblePosition()
     {
         var leftPosition = _fishAnimation.Velocity.Direction == Direction.Right
-        ? _fishAnimation.Position.Left + BUBBLE_OFFSET
-        : _fishAnimation.Position.Left;// - BUBBLE_OFFSET / 2;
-        return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top - 20}px;";
+        ? _fishAnimation.Position.Left + (_fishAnimation.Size.Width / .75)
+        : _fishAnimation.Position.Left;
+        return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top - _fishAnimation.Size.Height / 2.25}px;";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
