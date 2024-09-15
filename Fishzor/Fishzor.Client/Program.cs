@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Fishzor.Client.State;
 using Fishzor.Client.Services;
-using Fishzor.Client;
 using Microsoft.Extensions.Logging.Configuration;
 using Ganss.Xss;
 

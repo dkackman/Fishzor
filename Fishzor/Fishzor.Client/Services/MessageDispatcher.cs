@@ -34,30 +34,26 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
         switch (command)
         {
             case "help":
-                DisplayHelpMessage();
+                OnToastRequested?.Invoke(new ToastMessage
+                {
+                    Title = "Help",
+                    Caption = "Available commands",
+                    Messages = [
+                        ..ChatMessage.Commands.Select(x => $"/{x.Key} - {x.Value}"),
+                        "/shout - Shout a chat message",
+                        "/whisper - Whisper a chat message",
+                    ],
+                });
                 break;
+
             case "about":
                 OnOpenUrlRequested?.Invoke("https://github.com/dkackman/Fishzor");
                 break;
+
             // Add more commands here as needed
             default:
                 _logger.LogDebug("Unknown command: {commandName}", command);
                 break;
         }
-    }
-
-    private void DisplayHelpMessage()
-    {
-        OnToastRequested?.Invoke(new ToastMessage
-        {
-            Title = "Help",
-            Caption = "Available commands",
-            Messages = [
-                "/about - Show the about page",
-                "/help - Display this help",
-                "/shout - Shout a chat message",
-                "/whisper - Whisper a chat message",
-            ],
-        });
     }
 }

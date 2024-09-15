@@ -2,10 +2,16 @@ namespace Fishzor.Client.Components;
 
 public class ChatMessage
 {
+    public static readonly IReadOnlyDictionary<string, string> Commands = new Dictionary<string, string>
+    {
+        {"about", "Show the about page"},
+        {"help", "Display this help"}
+    };
+
     public string Message { get; init; } = "";
     public string Modifier { get; init; } = "";
 
-    public bool IsCommand => Modifier == "about" || Modifier == "help";
+    public bool IsCommand => Commands.ContainsKey(Modifier);
     public bool IsEmpty => string.IsNullOrWhiteSpace(Message) && string.IsNullOrWhiteSpace(Modifier);
 
     public static ChatMessage FromMessage(string message)

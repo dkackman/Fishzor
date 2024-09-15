@@ -1,9 +1,9 @@
 @using Ganss.Xss
 @inject HtmlSanitizer Sanitizer
 
-<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Message.Modifier @BubbleClass" style="@Position"
-    role="status" aria-live="polite">
-    @((MarkupString)Sanitizer.Sanitize(Message.Message))
+<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @BubbleClass"
+    style="@Position" role="status" aria-live="polite">
+    @(Sanitizer.Sanitize(Message.Message))
 </div>
 
 <style>

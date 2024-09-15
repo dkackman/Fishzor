@@ -1,7 +1,9 @@
 @rendermode InteractiveWebAssembly
 @using Fishzor.Client.Services
+@using Ganss.Xss
 @inject IJSRuntime JSRuntime
 @inject MessageDispatcher MessageDispatcher
+@inject HtmlSanitizer Sanitizer
 
 <form @onsubmit="SendMessage" class="chat-input-container" aria-label="Chat message input">
     <input id="chat-message" type="text" class="chat-input" @ref="inputElement" @bind="chatMessage"
@@ -80,7 +82,7 @@
 
     private async Task SendMessage()
     {
-        await MessageDispatcher.DispatchMessageAsync(chatMessage);
+        await MessageDispatcher.DispatchMessageAsync(Sanitizer.Sanitize(chatMessage));
         chatMessage = "";
         StateHasChanged();
     }
