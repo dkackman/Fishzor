@@ -1,8 +1,8 @@
 @using Ganss.Xss
 @inject HtmlSanitizer Sanitizer
 
-<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Message.Modifier" style="@Position" role="status"
-    aria-live="polite">
+<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Message.Modifier @BubbleClass" style="@Position"
+    role="status" aria-live="polite">
     @((MarkupString)Sanitizer.Sanitize(Message.Message))
 </div>
 
@@ -36,7 +36,6 @@
         width: 15px;
         height: 15px;
         bottom: -20px;
-        left: 20%;
         animation: float 3s infinite ease-in-out 0.5s;
     }
 
@@ -44,8 +43,23 @@
         width: 10px;
         height: 10px;
         bottom: -35px;
-        left: 40%;
         animation: float 3s infinite ease-in-out 1s;
+    }
+
+    .message-bubble.left::before {
+        left: 20%;
+    }
+
+    .message-bubble.left::after {
+        left: 40%;
+    }
+
+    .message-bubble.right::before {
+        right: 20%;
+    }
+
+    .message-bubble.right::after {
+        right: 40%;
     }
 
     @@keyframes float {
@@ -89,4 +103,7 @@
     [Parameter] public ChatMessage Message { get; set; } = new();
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public string Position { get; set; } = "";
+    [Parameter] public Direction FishDirection { get; set; }
+
+    private string BubbleClass => FishDirection == Direction.Left ? "left" : "right";
 }

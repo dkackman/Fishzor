@@ -8,7 +8,8 @@
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
     style="@($"position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
-<MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" Position="@GetBubblePosition()" />
+<MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" Position="@GetBubblePosition()"
+    FishDirection="@_fishAnimation.Velocity.Direction" />
 
 <script>
     function makeDraggable(element, dotNetRef) {
@@ -121,9 +122,9 @@
     public string GetBubblePosition()
     {
         var leftPosition = _fishAnimation.Velocity.Direction == Direction.Right
-        ? _fishAnimation.Position.Left + (_fishAnimation.Size.Width / .75)
-        : _fishAnimation.Position.Left;
-        return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top - _fishAnimation.Size.Height / 2.25}px;";
+        ? _fishAnimation.Position.Left + _fishAnimation.Size.Width
+        : _fishAnimation.Position.Left - _fishAnimation.Size.Width / 10;
+        return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top - _fishAnimation.Size.Height / 1.55}px;";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
