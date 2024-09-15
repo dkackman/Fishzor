@@ -9,10 +9,10 @@
 
 <img src="@FishImagePath" alt="@($"{Color} fish")" @ref="fishElement"
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
-    style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
+    style="@($"position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
 <div class="message-bubble @(IsMessageVisible ? "visible" : "hidden") @CurrentMessage.Modifier"
-    style="@GetBubblePosition()" role="status"    aria-live="polite">
+    style="@GetBubblePosition()" role="status" aria-live="polite">
     @((MarkupString)Sanitizer.Sanitize(CurrentMessage.Message))
 </div>
 
@@ -149,11 +149,11 @@
     {
         get
         {
-            if (FishVelocity.dx > 3.0)
+            if (_fishAnimation.Velocity.dx > 3.0)
             {
                 return "66";
             }
-            if (FishVelocity.dx > 2.25)
+            if (_fishAnimation.Velocity.dx > 2.25)
             {
                 return "75";
             }
@@ -161,15 +161,11 @@
         }
     }
 
-    public Direction Direction => FishVelocity.dx > 0 ? Direction.Right : Direction.Left;
-
-    public string FishImagePath => $"fish/{Color}/{Direction}-{FrameDuration}.png";
+    public string FishImagePath => $"fish/{Color}/{_fishAnimation.Direction}-{FrameDuration}.png";
 
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
-    private Point Position = new();
-    private Velocity FishVelocity = new();
-    private bool _animate = true; // Changed to true by default
+    private readonly FishAnimation _fishAnimation = new();
 
     // a single timer drives the animation for all fish
     private static readonly Timer _animationTimer = new(50) { AutoReset = true, Enabled = false };
@@ -186,7 +182,7 @@
     {
         if (IsClientFish)
         {
-            _animate = false;
+            _fishAnimation.Enabled = false;
             await Task.CompletedTask;
         }
     }
@@ -196,26 +192,18 @@
     {
         if (IsClientFish)
         {
-            Position = new Point(left, top);
-            NewVelocity();
-            _animate = true;
+            _fishAnimation.MoveFish(new Point(left, top));
+            _fishAnimation.Enabled = true;
             await Task.CompletedTask;
         }
     }
 
-    private void NewVelocity()
-    {
-        // choose a new velocity and change direction
-        var direction = FishVelocity.dx > 0 ? -1 : 1;
-        FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
-    }
-
     public string GetBubblePosition()
     {
-        var leftPosition = Direction == Direction.Right
-        ? Position.Left + BUBBLE_OFFSET
-        : Position.Left;// - BUBBLE_OFFSET / 2;
-        return $"left: {leftPosition}px; top: {Position.Top - 20}px;";
+        var leftPosition = _fishAnimation.Direction == Direction.Right
+        ? _fishAnimation.Position.Left + BUBBLE_OFFSET
+        : _fishAnimation.Position.Left;// - BUBBLE_OFFSET / 2;
+        return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top - 20}px;";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -228,7 +216,7 @@
             var left = (tankRect.Width - 50.0) * _random.NextDouble();
             var top = (tankRect.Height - 50.0) * _random.NextDouble();
 
-            Position = new Point(left, top);
+            _fishAnimation.MoveFish(new Point(left, top));
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
 
             if (IsClientFish)
@@ -248,9 +236,6 @@
 
     protected override void OnInitialized()
     {
-        var direction = _random.Next(0, 2) == 0 ? -1 : 1;
-        FishVelocity = new Velocity((_random.NextDouble() * 3.0 + 0.5) * direction, (_random.NextDouble() - 0.5) * 0.5);
-
         _animationTimer.Elapsed += OnTimerElapsedAsync;
     }
 
@@ -259,40 +244,16 @@
 
     private async Task MoveFishAsync()
     {
-        if (_animate)
+        if (_fishAnimation.Enabled)
         {
+            var newDirection = _fishAnimation.Velocity.dx > 0 ? -1 : 1;
             // random chance to change direction and speed
-            if (_random.Next(0, 400) < 1)
-            {
-                NewVelocity();
-            }
+            var velocity = _random.Next(0, 400) < 1 ? FishAnimation.GetRandomVelocity(newDirection) : _fishAnimation.Velocity;
 
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
-            var currentPostion = new Point(fishRect.Left, fishRect.Top);
-            var nextPosition = currentPostion + FishVelocity;
 
-            // if the fish is about to hit the edge of the tank, reverse the velocity
-            if (nextPosition.Top <= tankRect.Top)
-            {
-                FishVelocity = new Velocity(FishVelocity.dx, Math.Abs(FishVelocity.dy));
-            }
-            else if (nextPosition.Top + HEIGHT >= tankRect.Bottom)
-            {
-                FishVelocity = new Velocity(FishVelocity.dx, -Math.Abs(FishVelocity.dy));
-            }
-
-            if (nextPosition.Left <= tankRect.Left)
-            {
-                FishVelocity = new Velocity(Math.Abs(FishVelocity.dx), FishVelocity.dy);
-            }
-            else if (nextPosition.Left + WIDTH >= tankRect.Right)
-            {
-                FishVelocity = new Velocity(-Math.Abs(FishVelocity.dx), FishVelocity.dy);
-            }
-
-            // Update the position with the potentially modified velocity
-            Position += FishVelocity;
+            _fishAnimation.IncrementPosition(velocity, tankRect, fishRect);
 
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
         }
@@ -300,7 +261,7 @@
 
     public void Dispose()
     {
-        _animate = false;
+        _fishAnimation.Enabled = false;
         _animationTimer.Elapsed -= OnTimerElapsedAsync;
         _dotNetRef?.Dispose();
     }
