@@ -149,11 +149,11 @@
     {
         get
         {
-            if (_fishAnimation.Velocity.dx > 3.0)
+            if (_fishAnimation.Velocity.Dx > 3.0)
             {
                 return "66";
             }
-            if (_fishAnimation.Velocity.dx > 2.25)
+            if (_fishAnimation.Velocity.Dx > 2.25)
             {
                 return "75";
             }
@@ -161,7 +161,7 @@
         }
     }
 
-    public string FishImagePath => $"fish/{Color}/{_fishAnimation.Direction}-{FrameDuration}.png";
+    public string FishImagePath => $"fish/{Color}/{_fishAnimation.Velocity.Direction}-{FrameDuration}.png";
 
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
@@ -200,7 +200,7 @@
 
     public string GetBubblePosition()
     {
-        var leftPosition = _fishAnimation.Direction == Direction.Right
+        var leftPosition = _fishAnimation.Velocity.Direction == Direction.Right
         ? _fishAnimation.Position.Left + BUBBLE_OFFSET
         : _fishAnimation.Position.Left;// - BUBBLE_OFFSET / 2;
         return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top - 20}px;";
@@ -246,14 +246,19 @@
     {
         if (_fishAnimation.Enabled)
         {
-            var newDirection = _fishAnimation.Velocity.dx > 0 ? -1 : 1;
-            // random chance to change direction and speed
-            var velocity = _random.Next(0, 400) < 1 ? FishAnimation.GetRandomVelocity(newDirection) : _fishAnimation.Velocity;
+            // randomly change direction and/or speed
+            var changeDirection = _random.Next(0, 400) < 1;
+            var changeSpeed = _random.Next(0, 300) < 1;
+            var newDirectionVelocity = changeDirection ? _fishAnimation.Velocity.OtherDirection() : _fishAnimation.Velocity;
+
+            // always change speed if direction changed
+            var mewVelocity = changeSpeed || changeDirection ? FishAnimation.GetRandomVelocity(newDirectionVelocity.Direction) :
+            newDirectionVelocity;
 
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
 
-            _fishAnimation.IncrementPosition(velocity, tankRect, fishRect);
+            _fishAnimation.IncrementPosition(mewVelocity, tankRect, fishRect);
 
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
         }
