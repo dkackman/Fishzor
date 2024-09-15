@@ -1,16 +1,14 @@
 using Fishzor.Client.Components;
 using Microsoft.AspNetCore.SignalR.Client;
-using Ganss.Xss;
 
 namespace Fishzor.Client.State;
 
-public class FishTankState(HtmlSanitizer sanitizer, ILogger<FishTankState> logger) : IAsyncDisposable
+public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 {
     private HubConnection? _hubConnection;
     private string _hubUrl = string.Empty;
     private IDisposable? _onSubscription;
     private readonly ILogger<FishTankState> _logger = logger;
-    private readonly HtmlSanitizer _sanitizer = sanitizer;
     
     public string ClientConnectionId { get; private set; } = string.Empty;
     public IReadOnlyList<FishState> Fish { get; private set; } = [];
@@ -92,7 +90,7 @@ public class FishTankState(HtmlSanitizer sanitizer, ILogger<FishTankState> logge
         var fish = Fish.FirstOrDefault(f => f.Id == fishId);
         if (fish != null)
         {
-            fish.CurrentMessage = _sanitizer.Sanitize(message.Message);
+            fish.CurrentMessage = message;
             fish.IsMessageVisible = true;
             OnStateChanged?.Invoke();
 

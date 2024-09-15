@@ -20,7 +20,7 @@
                     <ul class="list-unstyled mb-0 ps-3">
                         @foreach (var message in ToastMessage.Messages)
                         {
-                            <li class="ms-3">• @((MarkupString)Sanitizer.Sanitize(message))</li>
+                            <li class="ms-3 mb-2">@((MarkupString)Sanitizer.Sanitize(message))</li>
                         }
                     </ul>
                 }

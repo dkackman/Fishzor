@@ -11,9 +11,9 @@
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
     style="@($"position: absolute; left: {Position.Left}px; top: {Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
 
-<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden")" style="@GetBubblePosition()" role="status"
-    aria-live="polite">
-    @((MarkupString)Sanitizer.Sanitize(CurrentMessage))
+<div class="message-bubble @(IsMessageVisible ? "visible" : "hidden") @CurrentMessage.Modifier"
+    style="@GetBubblePosition()" role="status"    aria-live="polite">
+    @((MarkupString)Sanitizer.Sanitize(CurrentMessage.Message))
 </div>
 
 <style>
@@ -77,6 +77,14 @@
     .message-bubble.visible {
         opacity: 1;
     }
+
+    .message-bubble.shout {
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #FF0000;
+    }
+
+    // Add more modifier styles as needed
 </style>
 <script>
     function makeDraggable(element, dotNetRef) {
@@ -132,7 +140,7 @@
     public string Scale { get; set; } = "100.0";
 
     [Parameter]
-    public string CurrentMessage { get; set; } = "";
+    public ChatMessage CurrentMessage { get; set; } = new();
 
     [Parameter]
     public bool IsMessageVisible { get; set; } = false;
