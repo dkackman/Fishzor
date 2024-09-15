@@ -56,6 +56,7 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
                 "/about - Show the about page",
                 "/help - Display this help",
                 "/shout - Shout a chat message",
+                "/whisper - Whisper a chat message",
             ],
         });
     }

@@ -3,7 +3,7 @@
 @inject IJSRuntime JSRuntime
 @inject MessageDispatcher MessageDispatcher
 
-<form @onsubmit="SubmitMessage" class="chat-input-container" aria-label="Chat message input">
+<form @onsubmit="SendMessage" class="chat-input-container" aria-label="Chat message input">
     <input id="chat-message" type="text" class="chat-input" @ref="inputElement" @bind="chatMessage"
         @bind:event="oninput" @onkeyup="HandleKeyPress" maxlength="45"
         placeholder="Type a short message... (/help for more)" aria-label="Chat message input" />
@@ -74,28 +74,22 @@
     {
         if (firstRender)
         {
-            await FocusInput();
+            await JSRuntime.InvokeVoidAsync("focusElement", inputElement);
         }
     }
 
-    private async Task FocusInput()
-    {
-        await JSRuntime.InvokeVoidAsync("focusElement", inputElement);
-    }
-
-    private async Task SubmitMessage()
+    private async Task SendMessage()
     {
         await MessageDispatcher.DispatchMessageAsync(chatMessage);
         chatMessage = "";
         StateHasChanged();
-        await FocusInput(); // Re-focus after sending
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(chatMessage))
         {
-            await SubmitMessage();
+            await SendMessage();
         }
     }
 }

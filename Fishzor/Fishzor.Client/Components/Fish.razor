@@ -1,7 +1,6 @@
 ﻿@implements IDisposable
 @using System.Timers
 @using Microsoft.JSInterop
-@using System.Diagnostics
 @using Fishzor.Client.Components
 @using Ganss.Xss
 @inject IJSRuntime JSRuntime
@@ -81,7 +80,15 @@
     .message-bubble.shout {
         font-weight: bold;
         text-transform: uppercase;
+        font-size: larger;
         color: #FF0000;
+    }
+
+    .message-bubble.whisper {
+        font-weight: italic;
+        text-transform: lowercase;
+        font-size: smaller;
+        color: #60666e;
     }
 
     // Add more modifier styles as needed
@@ -171,11 +178,7 @@
     private static readonly Timer _animationTimer = new(50) { AutoReset = true, Enabled = false };
     private static readonly Random _random = new Random();
 
-    // the size of the fish image
-    private const int HEIGHT = 84;
-    private const int WIDTH = 144;
-
-    private const int BUBBLE_OFFSET = 72; // Half of the WIDTH constant
+    private const int BUBBLE_OFFSET = 72;
 
     [JSInvokable]
     public async Task OnDraggingStart()
