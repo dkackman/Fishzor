@@ -31,23 +31,31 @@ public class FishHub(FishService fishService, HtmlSanitizer sanitizer, ILogger<F
 
     public async Task BroadcastMessage(ChatMessage message)
     {
-        if (_fishService.Fish.TryGetValue(Context.ConnectionId, out var fishState))
+        try
         {
-            var fishMessage = new FishMessage()
+            if (_fishService.Fish.TryGetValue(Context.ConnectionId, out var fishState))
             {
-                ClientId = Context.ConnectionId,
-                Message = new ChatMessage
+                var fishMessage = new FishMessage()
                 {
-                    Message = _sanitizer.Sanitize(message.Message),
-                    Modifier = _sanitizer.Sanitize(message.Modifier)
-                },
-                Color = fishState.Color,
-            };
-            await Clients.All.SendAsync("ReceiveMessage", fishMessage);
+                    ClientId = Context.ConnectionId,
+                    Message = new ChatMessage
+                    {
+                        Message = _sanitizer.Sanitize(message.Message),
+                        Modifier = _sanitizer.Sanitize(message.Modifier)
+                    },
+                };
+                await Clients.All.SendAsync("ReceiveMessage", fishMessage);
+            }
+            else
+            {
+                _logger.LogWarning("Received message to send but source client {ConnectionId} not found", Context.ConnectionId);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _logger.LogWarning("Received message to send but source client {ConnectionId} not found", Context.ConnectionId);
+            _logger.LogError(ex, "Error broadcasting message from client {ConnectionId}", Context.ConnectionId);
+            // Optionally, you could notify the client of the error
+            // await Clients.Caller.SendAsync("ErrorOccurred", "An error occurred while sending your message.");
         }
     }
 }

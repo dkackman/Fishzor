@@ -6,7 +6,7 @@ namespace Fishzor.Services;
 
 public class FishService(ILogger<FishService> logger)
 {
-    private static readonly Random _random = new();
+    private readonly Random _random = new();
 
     private readonly ILogger<FishService> _logger = logger;
     private readonly ConcurrentDictionary<string, FishState> _connectedFish = new();
@@ -26,12 +26,18 @@ public class FishService(ILogger<FishService> logger)
             Color = (FishColor)(colors.GetValue(_random.Next(colors.Length)) ?? FishColor.Orange),
             Scale = scaleValue.ToString("0.##")
         };
-        _connectedFish.TryAdd(connectionId, state);
+        if (!_connectedFish.TryAdd(connectionId, state))
+        {
+            _logger.LogWarning("Client already exists {ConnectionId}", connectionId);
+        }
     }
 
     public void RemoveFish(string connectionId)
     {
         _logger.LogDebug("Client disconnected: {ConnectionId}", connectionId);
-        _connectedFish.TryRemove(connectionId, out _);
+        if (!_connectedFish.TryRemove(connectionId, out _))
+        {
+            _logger.LogWarning("Client not found while removing {ConnectionId}", connectionId);
+        }
     }
 }

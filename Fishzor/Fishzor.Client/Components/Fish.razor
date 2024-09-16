@@ -34,7 +34,6 @@
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
     private readonly FishAnimation _fishAnimation = new();
-    private static readonly Random _random = new Random();
 
     [JSInvokable]
     public async Task OnDraggingStart()
@@ -65,11 +64,7 @@
         {
             // place the new fish at a random point within the tank
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-            // the 50 is buffer to keep the fish from being placed too close to the edge
-            var left = (tankRect.Width - 50.0) * _random.NextDouble();
-            var top = (tankRect.Height - 50.0) * _random.NextDouble();
-
-            _fishAnimation.MoveFish(new Point(left, top));
+            _fishAnimation.InitializePosition(tankRect);
 
             // only the end user's fish is draggable
             if (IsClientFish)
@@ -89,19 +84,10 @@
     {
         if (_fishAnimation.Enabled)
         {
-            // randomly change direction and/or speed
-            var changeDirection = _random.Next(0, 400) < 1;
-            var changeSpeed = _random.Next(0, 300) < 1;
-            var newDirectionVelocity = changeDirection ? _fishAnimation.Velocity.OtherDirection() : _fishAnimation.Velocity;
-
-            // always change speed if direction changed
-            var newVelocity = changeSpeed || changeDirection ? FishAnimation.GetRandomVelocity(newDirectionVelocity.Direction) :
-            newDirectionVelocity;
-
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
 
-            _fishAnimation.IncrementPosition(newVelocity, tankRect, fishRect);
+            _fishAnimation.IncrementPosition(tankRect, fishRect);
 
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
         }
