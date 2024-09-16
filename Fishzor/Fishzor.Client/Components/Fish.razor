@@ -39,22 +39,16 @@
     [JSInvokable]
     public async Task OnDraggingStart()
     {
-        if (IsClientFish)
-        {
-            _fishAnimation.Enabled = false;
-            await Task.CompletedTask;
-        }
+        _fishAnimation.Enabled = false;
+        await Task.CompletedTask;
     }
 
     [JSInvokable]
     public async Task OnDraggingComplete(double left, double top)
     {
-        if (IsClientFish)
-        {
-            _fishAnimation.MoveFish(new Point(left, top));
-            _fishAnimation.Enabled = true;
-            await Task.CompletedTask;
-        }
+        _fishAnimation.MoveFish(new Point(left, top));
+        _fishAnimation.Enabled = true;
+        await Task.CompletedTask;
     }
 
     public string GetBubblePosition()
@@ -77,6 +71,7 @@
 
             _fishAnimation.MoveFish(new Point(left, top));
 
+            // only the end user's fish is draggable
             if (IsClientFish)
             {
                 _dotNetRef = DotNetObjectReference.Create(this);
@@ -113,7 +108,7 @@
     }
 
     // there are different animated pngs that are used based on the fish's speed
-    // tthis is becuase the animation speed cannot be set dynamically
+    // this is because the animation speed cannot be set dynamically
     private string GetFrameDuration()
     {
         if (_fishAnimation.Velocity.Dx > 3.0)
@@ -125,7 +120,7 @@
         {
             return "75";
         }
-        
+
         return "100";
     }
 
