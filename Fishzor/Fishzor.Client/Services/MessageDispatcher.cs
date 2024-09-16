@@ -25,7 +25,7 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
         }
     }
 
-    public event Action<ToastMessage>? OnToastRequested;
+    public event Action<Toast>? OnToastRequested;
     public event Action<string>? OnOpenUrlRequested;
 
     private void ProcessCommand(string command)
@@ -34,14 +34,13 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
         switch (command)
         {
             case "help":
-                OnToastRequested?.Invoke(new ToastMessage
+                OnToastRequested?.Invoke(new Toast
                 {
                     Title = "Help",
                     Caption = "Available commands",
                     Messages = [
                         ..ChatMessage.Commands.Select(x => $"/{x.Key} - {x.Value}"),
-                        "/shout - Shout a chat message",
-                        "/whisper - Whisper a chat message",
+                        ..ChatMessage.Emotes.Select(x => $"/{x.Key} - {x.Value}"),
                     ],
                 });
                 break;

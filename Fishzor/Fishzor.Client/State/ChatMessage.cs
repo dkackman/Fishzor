@@ -8,6 +8,12 @@ public class ChatMessage
         {"help", "Display this help"}
     };
 
+    public static readonly IReadOnlyDictionary<string, string> Emotes = new Dictionary<string, string>
+    {
+        {"shout", "Shout a chat message"},
+        {"whisper", "Whisper a chat message"}
+    };
+
     public string Message { get; init; } = "";
     public string Modifier { get; init; } = "";
 

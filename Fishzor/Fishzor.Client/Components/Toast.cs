@@ -1,6 +1,6 @@
 namespace Fishzor.Client.Components;
 
-public class ToastMessage
+public class Toast
 {
     public string Title { get; init; } = "";
     public string Caption { get; init; } = "";

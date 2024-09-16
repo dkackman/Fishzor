@@ -124,7 +124,7 @@
     };
 </script>
 @code {
-    private ToastMessage? _toastMessage = null;
+    private Toast? _toastMessage = null;
 
     protected override void OnInitialized()
     {
@@ -140,7 +140,7 @@
         MessageDispatcher.OnOpenUrlRequested -= OpenUrl;
     }
 
-    private void ShowToast(ToastMessage message)
+    private void ShowToast(Toast message)
     {
         _toastMessage = message;
         StateHasChanged();
