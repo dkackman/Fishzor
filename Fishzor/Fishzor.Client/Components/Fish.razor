@@ -100,13 +100,13 @@
             var newDirectionVelocity = changeDirection ? _fishAnimation.Velocity.OtherDirection() : _fishAnimation.Velocity;
 
             // always change speed if direction changed
-            var mewVelocity = changeSpeed || changeDirection ? FishAnimation.GetRandomVelocity(newDirectionVelocity.Direction) :
+            var newVelocity = changeSpeed || changeDirection ? FishAnimation.GetRandomVelocity(newDirectionVelocity.Direction) :
             newDirectionVelocity;
 
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
 
-            _fishAnimation.IncrementPosition(mewVelocity, tankRect, fishRect);
+            _fishAnimation.IncrementPosition(newVelocity, tankRect, fishRect);
 
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
         }

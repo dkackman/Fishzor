@@ -7,14 +7,14 @@
     <div class="@GetPositionClasses()">
         <div class="toast show custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header custom-toast-header">
-                <strong class="me-auto">@((MarkupString)Sanitizer.Sanitize(ToastMessage.Title))</strong>
+                <strong class="me-auto">@(Sanitizer.Sanitize(ToastMessage.Title))</strong>
                 @if (ShowCloseButton)
                 {
                     <button type="button" class="btn-close custom-close" @onclick="Close" aria-label="Close"></button>
                 }
             </div>
             <div class="toast-body custom-toast-body">
-                <p>@((MarkupString)Sanitizer.Sanitize(ToastMessage.Caption))</p>
+                <p>@(Sanitizer.Sanitize(ToastMessage.Caption))</p>
                 @if (ToastMessage.Messages.Any())
                 {
                     <ul class="list-unstyled mb-0 ps-3">

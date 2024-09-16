@@ -30,7 +30,7 @@ public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispa
 
     private void ProcessCommand(string command)
     {
-        _logger.LogInformation("Processing command: {commandName}", command);
+        _logger.LogDebug("Processing command: {commandName}", command);
         switch (command)
         {
             case "help":

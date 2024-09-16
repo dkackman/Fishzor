@@ -16,10 +16,11 @@ public class FishAnimation
     }
 
     // this is called on the animation loop
-    public void IncrementPosition(Velocity velocity, ClientRect tank, ClientRect fish)
+    public void IncrementPosition(Velocity newVelocity, ClientRect tank, ClientRect fish)
     {
-        Velocity = velocity;
+        Velocity = newVelocity;
         Size = new Size(fish.Height, fish.Width);
+
         var currentPosition = new Point(fish.Left, fish.Top);
         var nextPosition = currentPosition + Velocity;
 
@@ -28,7 +29,7 @@ public class FishAnimation
         Position += Velocity;
     }
 
-    public static Velocity GetRandomVelocity(Direction direction) 
+    public static Velocity GetRandomVelocity(Direction direction)
     {
         var directionModifier = direction == Direction.Right ? 1 : -1;
         return new((_random.NextDouble() * 3.0 + 0.5) * directionModifier, (_random.NextDouble() - 0.5) * 0.5);
