@@ -2,7 +2,9 @@
 @using System.Timers
 @using Microsoft.JSInterop
 @using Fishzor.Client.Components
+@using Fishzor.Client.Services
 @inject IJSRuntime JSRuntime
+@inject Animator Animator
 
 <img src="@FishImagePath" alt="@($"{Color} fish")" @ref="fishElement"
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
@@ -91,12 +93,7 @@
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
     private readonly FishAnimation _fishAnimation = new();
-
-    // a single timer drives the animation for all fish
-    private static readonly Timer _animationTimer = new(50) { AutoReset = true, Enabled = false };
     private static readonly Random _random = new Random();
-
-    private const int BUBBLE_OFFSET = 72;
 
     [JSInvokable]
     public async Task OnDraggingStart()
@@ -138,30 +135,19 @@
             var top = (tankRect.Height - 50.0) * _random.NextDouble();
 
             _fishAnimation.MoveFish(new Point(left, top));
-            await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
 
             if (IsClientFish)
             {
                 _dotNetRef = DotNetObjectReference.Create(this);
                 await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
             }
-
-            // now turn on the static timer that drives the animation
-            // if it's not already running
-            if (!_animationTimer.Enabled)
-            {
-                _animationTimer.Enabled = true;
-            }
         }
     }
 
-    protected override void OnInitialized()
-    {
-        _animationTimer.Elapsed += OnTimerElapsedAsync;
-    }
+    protected override void OnInitialized() => Animator.OnAnimationTick += OnTimerElapsedAsync;
 
     // we need this as a member instead of a lambda to avoid a memory leak when the timer is disposed
-    private async void OnTimerElapsedAsync(object? sender, ElapsedEventArgs e) => await MoveFishAsync();
+    private async void OnTimerElapsedAsync() => await MoveFishAsync();
 
     private async Task MoveFishAsync()
     {
@@ -174,7 +160,7 @@
 
             // always change speed if direction changed
             var mewVelocity = changeSpeed || changeDirection ? FishAnimation.GetRandomVelocity(newDirectionVelocity.Direction) :
-            newDirectionVelocity;
+            newDirectionVelocity; 
 
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
@@ -188,7 +174,7 @@
     public void Dispose()
     {
         _fishAnimation.Enabled = false;
-        _animationTimer.Elapsed -= OnTimerElapsedAsync;
+        Animator.OnAnimationTick -= OnTimerElapsedAsync;
         _dotNetRef?.Dispose();
     }
 }
