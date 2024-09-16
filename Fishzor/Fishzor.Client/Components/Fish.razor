@@ -13,49 +13,6 @@
 <MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" Position="@GetBubblePosition()"
     FishDirection="@_fishAnimation.Velocity.Direction" />
 
-<script>
-    function makeDraggable(element, dotNetRef) {
-        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-
-        element.onmousedown = function dragMouseDown(e) {
-            dotNetRef.invokeMethodAsync('OnDraggingStart')
-            e = e || window.event;
-            e.preventDefault();
-
-            // get the mouse cursor position at startup:
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-
-            // drag functions
-            document.onmouseup = closeDragElement;
-            document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // calculate the new cursor position:
-            pos1 = pos3 - e.clientX;
-            pos2 = pos4 - e.clientY;
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-
-            // set the element's new position:
-            element.style.top = (element.offsetTop - pos2) + "px";
-            element.style.left = (element.offsetLeft - pos1) + "px";
-        }
-
-        function closeDragElement() {
-            // disable drag functions when mouse button is released
-            document.onmouseup = null;
-            document.onmousemove = null;
-
-            // let the c# know the new position
-            dotNetRef.invokeMethodAsync('OnDraggingComplete', parseInt(element.style.left, 10), parseInt(element.style.top, 10));
-        }
-    }
-</script>
-
 @code {
     [Parameter]
     public FishColor Color { get; set; }
@@ -72,23 +29,7 @@
     [Parameter]
     public bool IsMessageVisible { get; set; } = false;
 
-    public string FrameDuration
-    {
-        get
-        {
-            if (_fishAnimation.Velocity.Dx > 3.0)
-            {
-                return "66";
-            }
-            if (_fishAnimation.Velocity.Dx > 2.25)
-            {
-                return "75";
-            }
-            return "100";
-        }
-    }
-
-    public string FishImagePath => $"fish/{Color}/{_fishAnimation.Velocity.Direction}-{FrameDuration}.png";
+    public string FishImagePath => $"fish/{Color}/{_fishAnimation.Velocity.Direction}-{GetFrameDuration()}.png";
 
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
@@ -160,7 +101,7 @@
 
             // always change speed if direction changed
             var mewVelocity = changeSpeed || changeDirection ? FishAnimation.GetRandomVelocity(newDirectionVelocity.Direction) :
-            newDirectionVelocity; 
+            newDirectionVelocity;
 
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
@@ -169,6 +110,23 @@
 
             await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
         }
+    }
+
+    // there are different animated pngs that are used based on the fish's speed
+    // tthis is becuase the animation speed cannot be set dynamically
+    private string GetFrameDuration()
+    {
+        if (_fishAnimation.Velocity.Dx > 3.0)
+        {
+            return "66";
+        }
+
+        if (_fishAnimation.Velocity.Dx > 2.25)
+        {
+            return "75";
+        }
+        
+        return "100";
     }
 
     public void Dispose()
