@@ -33,11 +33,10 @@ public class FishAnimation
     public void IncrementPosition(ClientRect tank, ClientRect fish)
     {
         var nextVelocity = GetNextVelocity();
-        Size = new Size(fish.Height, fish.Width);
-
         var currentPosition = new Point(fish.Left, fish.Top);
         var nextPosition = currentPosition + Velocity;
 
+        Size = new Size(fish.Height, fish.Width);
         Velocity = AdjustVelocityForBoundaries(nextVelocity, Size, nextPosition, tank);
         Position += Velocity;
     }
