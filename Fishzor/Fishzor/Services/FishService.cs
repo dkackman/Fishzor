@@ -37,7 +37,7 @@ public class FishService(ILogger<FishService> logger)
         _logger.LogDebug("Client disconnected: {ConnectionId}", connectionId);
         if (!_connectedFish.TryRemove(connectionId, out _))
         {
-            _logger.LogWarning("Client not found while removing {ConnectionId}", connectionId);
+            _logger.LogWarning("Instance not found while removing {ConnectionId}", connectionId);
         }
     }
 }
