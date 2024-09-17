@@ -2,16 +2,11 @@ namespace Fishzor.Client.Components;
 
 public class FishAnimation
 {
-    private readonly Random _random = new();
+    private readonly static Random _random = new();
     public Size Size { get; private set; } = new();
     public Point Position { get; private set; } = new();
-    public Velocity Velocity { get; private set; }
+    public Velocity Velocity { get; private set; } = GetRandomVelocity(_random.Next(0, 2) == 0 ? Direction.Left : Direction.Right);
     public bool Enabled { get; set; } = true;
-
-    public FishAnimation()
-    {
-        Velocity = GetRandomVelocity(_random.Next(0, 2) == 0 ? Direction.Left : Direction.Right);
-    }
 
     public void InitializePosition(ClientRect tankRect)
     {
@@ -19,7 +14,7 @@ public class FishAnimation
         var left = (tankRect.Width - 50.0) * _random.NextDouble();
         var top = (tankRect.Height - 50.0) * _random.NextDouble();
 
-        MoveFish(new Point(left, top));
+        Position = new Point(left, top);
     }
 
     // this is called when dragging the fish is complete
@@ -42,7 +37,7 @@ public class FishAnimation
         Position += Velocity;
     }
 
-    public Velocity GetRandomVelocity(Direction direction)
+    private static Velocity GetRandomVelocity(Direction direction)
     {
         var directionModifier = direction == Direction.Right ? 1 : -1;
         return new((_random.NextDouble() * 3.0 + 0.5) * directionModifier, (_random.NextDouble() - 0.5) * 0.5);
