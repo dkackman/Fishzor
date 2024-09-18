@@ -21,7 +21,17 @@
     <Routes />
     <script src="_framework/blazor.webassembly.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script>
+        function registerNetworkStatusCallback(dotnetHelper) {
+            function updateOnlineStatus() {
+                dotnetHelper.invokeMethodAsync('OnNetworkStatusChange', navigator.onLine);
+            }
 
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+        }
+    </script>
 </body>
 
 </html>

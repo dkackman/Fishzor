@@ -21,7 +21,6 @@ public class Animator : IDisposable
     {
         var tankRect = await _JSRuntime.InvokeAsync<ClientRect>("getTankRect");
         OnAnimationTick?.Invoke(tankRect);
-        await Task.CompletedTask;
     }
 
     public event Action<ClientRect>? OnAnimationTick;

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
+@implements IDisposable
 @using Fishzor.Client.Components
 @using Fishzor.Client.Services
 @using Fishzor.Client.State
@@ -8,6 +9,13 @@
 @inject IJSRuntime JSRuntime
 
 <div class="fish-tank-container">
+    @if (FishTankState.IsOfflineMode)
+    {
+        <FloatingToast IsVisible="@FishTankState.IsOfflineMode" Position="TopLeft" ShowCloseButton="false" 
+            ToastMessage="@(new Toast(){Title ="Offline", Caption="You are offline. Functionality will be limited"})">
+
+        </FloatingToast>
+    }
     <div id="fishTank" aria-label="Fish tank with swimming fish">
         <PageTitle>Fishy fishy fish</PageTitle>
 
@@ -39,28 +47,6 @@
         flex-grow: 1;
         position: relative;
         overflow: hidden;
-    }
-
-    .help-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .help-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-        max-width: 80%;
-        max-height: 80%;
-        overflow-y: auto;
     }
 
     ::deep ChatInput {
@@ -125,6 +111,22 @@
 </script>
 @code {
     private Toast? _toastMessage = null;
+    private DotNetObjectReference<FishTank>? _dotNetRef;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("registerNetworkStatusCallback", _dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public void OnNetworkStatusChange(bool isOnline)
+    {
+        FishTankState.IsOfflineMode = !isOnline;
+        StateHasChanged();
+    }
 
     protected override void OnInitialized()
     {
@@ -138,6 +140,8 @@
         FishTankState.OnStateChanged -= StateHasChanged;
         MessageDispatcher.OnToastRequested -= ShowToast;
         MessageDispatcher.OnOpenUrlRequested -= OpenUrl;
+
+        _dotNetRef?.Dispose();
     }
 
     private void ShowToast(Toast message)

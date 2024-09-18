@@ -18,19 +18,16 @@ const manifestUrlList = self.assetsManifest.assets.map(asset => new URL(asset.ur
 
 async function onInstall(event) {
     console.info('Service worker: Install');
-
-    // Fetch and cache all matching items from the assets manifest
     const assetsRequests = self.assetsManifest.assets
         .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
         .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
         .map(asset => new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
+
     await caches.open(cacheName).then(cache => cache.addAll(assetsRequests));
 }
 
 async function onActivate(event) {
     console.info('Service worker: Activate');
-
-    // Delete unused caches
     const cacheKeys = await caches.keys();
     await Promise.all(cacheKeys
         .filter(key => key.startsWith(cacheNamePrefix) && key !== cacheName)
@@ -38,18 +35,34 @@ async function onActivate(event) {
 }
 
 async function onFetch(event) {
-    let cachedResponse = null;
-    if (event.request.method === 'GET') {
-        // For all navigation requests, try to serve index.html from cache,
-        // unless that request is for an offline resource.
-        // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
-        const shouldServeIndexHtml = event.request.mode === 'navigate'
-            && !manifestUrlList.some(url => url === event.request.url);
+    if (event.request.method !== 'GET')
+        return fetch(event.request);
 
+    let cachedResponse = null;
+    if (event.request.mode === 'navigate') {
+        const shouldServeIndexHtml = event.request.mode === 'navigate';
         const request = shouldServeIndexHtml ? 'index.html' : event.request;
         const cache = await caches.open(cacheName);
         cachedResponse = await cache.match(request);
+    } else {
+        const cache = await caches.open(cacheName);
+        cachedResponse = await cache.match(event.request);
     }
 
-    return cachedResponse || fetch(event.request);
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+
+    try {
+        const response = await fetch(event.request);
+        if (response.ok) {
+            const cache = await caches.open(cacheName);
+            await cache.put(event.request, response.clone());
+        }
+        return response;
+    } catch (error) {
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match('offline.html');
+        return cachedResponse;
+    }
 }

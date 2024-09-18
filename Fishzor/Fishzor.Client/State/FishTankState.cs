@@ -12,6 +12,7 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 
     public string ClientConnectionId { get; private set; } = string.Empty;
     public IReadOnlyList<FishState> Fish { get; private set; } = [];
+    public bool IsOfflineMode { get; set; } = false;
 
     public event Action? OnStateChanged;
 
@@ -19,48 +20,75 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 
     public async Task InitializeAsync(string hubUrl)
     {
-        _logger.LogInformation("Initializing FishTankState with hub URL: {hubUrl}", hubUrl);
         _hubUrl = hubUrl;
         await ConnectToHub();
     }
 
     private async Task ConnectToHub()
     {
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(_hubUrl)
-            .WithAutomaticReconnect()
-            .Build();
-
-        _onSubscription?.Dispose();
-        _onSubscription = _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fishStates =>
+        try
         {
-            Fish = fishStates.ToList().AsReadOnly();
-            OnStateChanged?.Invoke();
-        });
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(_hubUrl)
+                .WithAutomaticReconnect()
+                .Build();
 
-        _hubConnection.On<FishMessage>("ReceiveMessage", async (message) =>
+            _onSubscription?.Dispose();
+            _onSubscription = _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fishStates =>
+            {
+                Fish = fishStates.ToList().AsReadOnly();
+                OnStateChanged?.Invoke();
+            });
+
+            _hubConnection.On<FishMessage>("ReceiveMessage", async (message) =>
+            {
+                await DisplayMessageForFish(message.ClientId, message.Message);
+                OnMessageReceived?.Invoke(message);
+                OnStateChanged?.Invoke();
+            });
+
+            _hubConnection.Reconnecting += error =>
+            {
+                IsOfflineMode = true;
+                OnStateChanged?.Invoke();
+                return Task.CompletedTask;
+            };
+
+            _hubConnection.Reconnected += connectionId =>
+            {
+                IsOfflineMode = false;
+                ClientConnectionId = connectionId ?? string.Empty;
+                OnStateChanged?.Invoke();
+                return Task.CompletedTask;
+            };
+
+            _hubConnection.Closed += error =>
+            {
+                IsOfflineMode = false;
+                OnStateChanged?.Invoke();
+                return Task.CompletedTask;
+            };
+
+            await _hubConnection.StartAsync();
+            IsOfflineMode = false;
+            ClientConnectionId = _hubConnection.ConnectionId!;
+            _logger.LogDebug("ClientId connected: {ClientConnectionId}", ClientConnectionId);
+        }
+        catch (Exception ex)
         {
-            await DisplayMessageForFish(message.ClientId, message.Message);
-            OnMessageReceived?.Invoke(message);
-            OnStateChanged?.Invoke();
-        });
-
-        _hubConnection.Reconnecting += error =>
+            _logger.LogError(ex, "Failed to connect to the hub. Working in offline mode.");
+            IsOfflineMode = true;
+            ClientConnectionId = "offline1";
+            // Initialize with some default fish for offline mode
+            Fish =
+            [
+                new FishState { Id = ClientConnectionId, Color = FishColor.Orange, Scale = "1.0" },
+            ];
+        }
+        finally
         {
             OnStateChanged?.Invoke();
-            return Task.CompletedTask;
-        };
-
-        _hubConnection.Reconnected += connectionId =>
-        {
-            ClientConnectionId = connectionId ?? string.Empty;
-            OnStateChanged?.Invoke();
-            return Task.CompletedTask;
-        };
-
-        await _hubConnection.StartAsync();
-        ClientConnectionId = _hubConnection.ConnectionId!;
-        _logger.LogDebug("ClientId connected: {ClientConnectionId}", ClientConnectionId);
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -77,9 +105,13 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 
     public async Task SendMessageAsync(ChatMessage message)
     {
-        if (_hubConnection is not null)
+        if (_hubConnection is not null && !IsOfflineMode)
         {
             await _hubConnection.SendAsync("BroadcastMessage", message);
+        }
+        else
+        {
+            _logger.LogWarning("Cannot send message: not connected to hub");
         }
     }
 
