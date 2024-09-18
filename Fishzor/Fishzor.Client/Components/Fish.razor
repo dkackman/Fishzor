@@ -65,6 +65,7 @@
             // place the new fish at a random point within the tank
             var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             _fishAnimation.InitializePosition(tankRect);
+            StateHasChanged(); // Ensure component re-renders on UI thread
 
             // only the end user's fish is draggable
             if (IsClientFish)
