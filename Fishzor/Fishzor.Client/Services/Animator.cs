@@ -1,25 +1,30 @@
+using Fishzor.Client.Components;
 using System.Timers;
+using Microsoft.JSInterop;
 
 namespace Fishzor.Client.Services;
 
 public class Animator : IDisposable
 {
     private readonly System.Timers.Timer _animationTimer = new(50) { AutoReset = true, Enabled = false };
+    private readonly IJSRuntime _JSRuntime;
     private bool disposedValue;
 
-    public Animator()
+    public Animator(IJSRuntime JSRuntime)
     {
+        _JSRuntime = JSRuntime;
         _animationTimer.Start();
         _animationTimer.Elapsed += OnTimerElapsedAsync;
     }
 
     private async void OnTimerElapsedAsync(object? sender, ElapsedEventArgs e)
     {
-        OnAnimationTick?.Invoke();
+        var tankRect = await _JSRuntime.InvokeAsync<ClientRect>("getTankRect");
+        OnAnimationTick?.Invoke(tankRect);
         await Task.CompletedTask;
     }
 
-    public event Action? OnAnimationTick;
+    public event Action<ClientRect>? OnAnimationTick;
 
     protected virtual void Dispose(bool disposing)
     {

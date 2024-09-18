@@ -79,13 +79,12 @@
     protected override void OnInitialized() => Animator.OnAnimationTick += OnTimerElapsedAsync;
 
     // we need this as a member instead of a lambda to avoid a memory leak when the timer is disposed
-    private async void OnTimerElapsedAsync() => await MoveFishAsync();
+    private async void OnTimerElapsedAsync(ClientRect tankRect) => await MoveFishAsync(tankRect);
 
-    private async Task MoveFishAsync()
+    private async Task MoveFishAsync(ClientRect tankRect)
     {
         if (_fishAnimation.Enabled)
         {
-            var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
 
             _fishAnimation.IncrementPosition(tankRect, fishRect);
