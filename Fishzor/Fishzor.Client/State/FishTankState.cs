@@ -9,7 +9,7 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
     private string _hubUrl = string.Empty;
     private IDisposable? _onSubscription;
     private readonly ILogger<FishTankState> _logger = logger;
-    
+
     public string ClientConnectionId { get; private set; } = string.Empty;
     public IReadOnlyList<FishState> Fish { get; private set; } = [];
 

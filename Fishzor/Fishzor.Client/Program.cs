@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Fishzor.Client.State;
 using Fishzor.Client.Services;
-using Microsoft.Extensions.Logging.Configuration;
+using Fishzor.Client.State;
 using Ganss.Xss;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Logging.Configuration;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

@@ -1,4 +1,4 @@
-namespace Fishzor.Client.Components; 
+namespace Fishzor.Client.Components;
 
 public readonly struct ClientRect
 {

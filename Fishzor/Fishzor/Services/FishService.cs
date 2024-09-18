@@ -1,6 +1,6 @@
-using System.Collections.Concurrent;
-using Fishzor.Client.State;
 using Fishzor.Client.Components;
+using Fishzor.Client.State;
+using System.Collections.Concurrent;
 
 namespace Fishzor.Services;
 
@@ -8,6 +8,7 @@ public class FishService(ILogger<FishService> logger)
 {
     private readonly ILogger<FishService> _logger = logger;
     private readonly ConcurrentDictionary<string, FishState> _connectedFish = new();
+
     public IEnumerable<FishState> ConnectedFish => _connectedFish.Values;
 
     public IReadOnlyDictionary<string, FishState> Fish => _connectedFish.AsReadOnly();

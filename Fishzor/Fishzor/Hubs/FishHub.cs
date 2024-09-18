@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.SignalR;
-using Fishzor.Services;
-using Fishzor.Client.State;
 using Fishzor.Client.Components;
+using Fishzor.Client.State;
+using Fishzor.Services;
 using Ganss.Xss;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Fishzor.Hubs;
 
