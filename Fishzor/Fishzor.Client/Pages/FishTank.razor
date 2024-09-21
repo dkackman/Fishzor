@@ -9,18 +9,11 @@
 @inject IJSRuntime JSRuntime
 
 <div class="fish-tank-container">
-    @if (FishTankState.IsOfflineMode)
-    {
-        <FloatingToast IsVisible="@FishTankState.IsOfflineMode" Position="TopLeft" ShowCloseButton="false" 
-            ToastMessage="@(new Toast(){Title ="Offline", Caption="You are offline. Functionality will be limited"})">
-
-        </FloatingToast>
-    }
-    <div id="fishTank" aria-label="Fish tank with swimming fish">
+    <div id="fishTank" aria-label="Fish tank with swimming fish and an octopus">
         <PageTitle>Fishy fishy fish</PageTitle>
 
         <div aria-live="polite" class="visually-hidden">
-            There are currently @FishTankState.Fish.Count fish in the tank.
+            There are currently @FishTankState.Fish.Count fish in the tank, and one octopus.
         </div>
 
         @foreach (var fish in FishTankState.Fish)
@@ -28,13 +21,31 @@
             <Fish Color="@fish.Color" Scale="@fish.Scale" IsClientFish="@(fish.Id == FishTankState.ClientConnectionId)"
                 CurrentMessage="@fish.CurrentMessage" IsMessageVisible="@fish.IsMessageVisible" @key="fish.Id" />
         }
+
+        <svg class="octopus" width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="40" r="30" fill="#FF69B4" />
+            <circle cx="40" cy="35" r="5" fill="white" />
+            <circle cx="60" cy="35" r="5" fill="white" />
+            <circle cx="40" cy="35" r="2" fill="black" />
+            <circle cx="60" cy="35" r="2" fill="black" />
+            <path d="M 40 50 Q 50 60 60 50" fill="none" stroke="black" stroke-width="2" />
+            @for (int i = 0; i < 8; i++)
+            {
+                <path
+                    d="M @(50 + 30 * Math.Cos(i * Math.PI / 4)) @(40 + 30 * Math.Sin(i * Math.PI / 4)) Q @(50 + 45 * Math.Cos(i * Math.PI / 4)) @(40 + 45 * Math.Sin(i * Math.PI / 4)) @(50 + 60 * Math.Cos(i * Math.PI / 4)) @(40 + 60 * Math.Sin(i * Math.PI / 4))"
+                    fill="none" stroke="#FF69B4" stroke-width="5" />
+            }
+        </svg>
     </div>
 
     <ChatInput />
 </div>
 
-<FloatingToast ToastMessage="@_toastMessage" IsVisible="@(_toastMessage != null)" Position="TopLeft"
-    OnClose="@CloseToast" />
+<FloatingToast IsVisible="@FishTankState.IsOfflineMode" Position="TopLeft" ShowCloseButton="false"
+    ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
+
+<FloatingToast IsVisible="@(_toastMessage != null)" Position="TopLeft" OnClose="@CloseToast"
+    ToastMessage="@_toastMessage" />
 
 <style>
     .fish-tank-container {
@@ -51,6 +62,14 @@
 
     ::deep ChatInput {
         width: 100%;
+    }
+
+    .octopus {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 100px;
+        height: 100px;
     }
 </style>
 

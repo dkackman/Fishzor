@@ -5,9 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-
-
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup>
