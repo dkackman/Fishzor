@@ -10,9 +10,10 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
     private IDisposable? _onReceiveFishStateSubscription;
     private IDisposable? _onReceiveMessageSubscription;
     private readonly ILogger<FishTankClient> _logger = logger;
+    private IDictionary<string, FishState> _fish = new Dictionary<string, FishState>();
 
     public string ClientConnectionId { get; private set; } = string.Empty;
-    public IReadOnlyList<FishState> Fish { get; private set; } = [];
+    public IReadOnlyCollection<FishState> Fish => (IReadOnlyCollection<FishState>)_fish.Values;
     public bool IsOfflineMode { get; set; } = false;
 
     public event Action? OnStateChanged;
@@ -35,7 +36,7 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
 
             _onReceiveFishStateSubscription = _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fishStates =>
             {
-                Fish = fishStates.ToList().AsReadOnly();
+                _fish = fishStates.ToDictionary(f => f.Id);
                 OnStateChanged?.Invoke();
             });
 
@@ -79,10 +80,10 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
             IsOfflineMode = true;
             ClientConnectionId = "offline1";
             // Initialize with some default fish for offline mode
-            Fish =
-            [
-                new FishState { Id = ClientConnectionId, Color = FishColor.Orange, Scale = "1.0" },
-            ];
+            _fish = new Dictionary<string, FishState>()
+            {
+                ["offline1"] = new FishState { Id = ClientConnectionId, Color = FishColor.Orange, Scale = "1.0" },
+            };
         }
         finally
         {
@@ -120,8 +121,7 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
     {
         _logger.LogDebug("Received message from: {fishId}", fishId);
 
-        var fish = Fish.FirstOrDefault(f => f.Id == fishId);
-        if (fish != null)
+        if (_fish.TryGetValue(fishId, out var fish))
         {
             fish.CurrentMessage = message;
             fish.IsMessageVisible = true;
