@@ -3,9 +3,9 @@ using Fishzor.Client.State;
 
 namespace Fishzor.Client.Services;
 
-public class MessageDispatcher(FishTankState fishTankState, ILogger<MessageDispatcher> logger)
+public class MessageDispatcher(FishTankClient fishTankState, ILogger<MessageDispatcher> logger)
 {
-    private readonly FishTankState _fishTankState = fishTankState;
+    private readonly FishTankClient _fishTankState = fishTankState;
     private readonly ILogger<MessageDispatcher> _logger = logger;
 
     public async Task DispatchMessageAsync(string message)

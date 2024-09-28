@@ -1,14 +1,15 @@
 using Fishzor.Client.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Fishzor.Client.State;
 
-namespace Fishzor.Client.State;
+namespace Fishzor.Client;
 
-public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
+public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
 {
     private HubConnection? _hubConnection;
-    private string _hubUrl = string.Empty;
-    private IDisposable? _onSubscription;
-    private readonly ILogger<FishTankState> _logger = logger;
+    private IDisposable? _onReceiveFishStateSubscription;
+    private IDisposable? _onReceiveMessageSubscription;
+    private readonly ILogger<FishTankClient> _logger = logger;
 
     public string ClientConnectionId { get; private set; } = string.Empty;
     public IReadOnlyList<FishState> Fish { get; private set; } = [];
@@ -20,27 +21,25 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 
     public async Task InitializeAsync(string hubUrl)
     {
-        _hubUrl = hubUrl;
-        await ConnectToHub();
-    }
-
-    private async Task ConnectToHub()
-    {
         try
         {
+            if (_hubConnection is not null)
+            {
+                await DisposeAsync();
+            }
+
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(_hubUrl)
+                .WithUrl(hubUrl)
                 .WithAutomaticReconnect()
                 .Build();
 
-            _onSubscription?.Dispose();
-            _onSubscription = _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fishStates =>
+            _onReceiveFishStateSubscription = _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fishStates =>
             {
                 Fish = fishStates.ToList().AsReadOnly();
                 OnStateChanged?.Invoke();
             });
 
-            _hubConnection.On<FishMessage>("ReceiveMessage", async (message) =>
+            _onReceiveMessageSubscription = _hubConnection.On<FishMessage>("ReceiveMessage", async (message) =>
             {
                 await DisplayMessageForFish(message.ClientId, message.Message);
                 OnMessageReceived?.Invoke(message);
@@ -93,11 +92,13 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        _onSubscription?.Dispose();
+        _onReceiveFishStateSubscription?.Dispose();
+        _onReceiveMessageSubscription?.Dispose();
 
         if (_hubConnection is not null)
         {
             await _hubConnection.DisposeAsync();
+            _hubConnection = null;
         }
     }
 
@@ -115,7 +116,7 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
         }
     }
 
-    public async Task DisplayMessageForFish(string fishId, ChatMessage message)
+    private async Task DisplayMessageForFish(string fishId, ChatMessage message)
     {
         _logger.LogDebug("Received message from: {fishId}", fishId);
 
@@ -128,6 +129,7 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 
             await Task.Delay(MessageDisplayDurationMS);
 
+            fish.CurrentMessage = new();
             fish.IsMessageVisible = false;
             OnStateChanged?.Invoke();
         }

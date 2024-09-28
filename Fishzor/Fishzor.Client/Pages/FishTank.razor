@@ -3,8 +3,8 @@
 @implements IDisposable
 @using Fishzor.Client.Components
 @using Fishzor.Client.Services
-@using Fishzor.Client.State
-@inject FishTankState FishTankState
+@using Fishzor.Client
+@inject FishTankClient FishTankClient
 @inject MessageDispatcher MessageDispatcher
 @inject IJSRuntime JSRuntime
 
@@ -13,12 +13,12 @@
         <PageTitle>Fishy fishy fish</PageTitle>
 
         <div aria-live="polite" class="visually-hidden">
-            There are currently @FishTankState.Fish.Count fish in the tank, and one octopus.
+            There are currently @FishTankClient.Fish.Count fish in the tank, and one octopus.
         </div>
 
-        @foreach (var fish in FishTankState.Fish)
+        @foreach (var fish in FishTankClient.Fish)
         {
-            <Fish Color="@fish.Color" Scale="@fish.Scale" IsClientFish="@(fish.Id == FishTankState.ClientConnectionId)"
+            <Fish Color="@fish.Color" Scale="@fish.Scale" IsClientFish="@(fish.Id == FishTankClient.ClientConnectionId)"
                 CurrentMessage="@fish.CurrentMessage" IsMessageVisible="@fish.IsMessageVisible" @key="fish.Id" />
         }
     </div>
@@ -26,7 +26,7 @@
     <ChatInput />
 </div>
 
-<FloatingToast IsVisible="@FishTankState.IsOfflineMode" Position="TopLeft" ShowCloseButton="false"
+<FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="TopLeft" ShowCloseButton="false"
     ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
 
 <FloatingToast IsVisible="@(_toastMessage != null)" Position="TopLeft" OnClose="@CloseToast"
@@ -128,7 +128,7 @@
     [JSInvokable]
     public void OnNetworkStatusChange(bool isOnline)
     {
-        FishTankState.IsOfflineMode = !isOnline;
+        FishTankClient.IsOfflineMode = !isOnline;
         StateHasChanged();
     }
 
@@ -136,12 +136,12 @@
     {
         MessageDispatcher.OnToastRequested += ShowToast;
         MessageDispatcher.OnOpenUrlRequested += OpenUrl;
-        FishTankState.OnStateChanged += StateHasChanged;
+        FishTankClient.OnStateChanged += StateHasChanged;
     }
 
     public void Dispose()
     {
-        FishTankState.OnStateChanged -= StateHasChanged;
+        FishTankClient.OnStateChanged -= StateHasChanged;
         MessageDispatcher.OnToastRequested -= ShowToast;
         MessageDispatcher.OnOpenUrlRequested -= OpenUrl;
 

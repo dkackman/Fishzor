@@ -1,5 +1,5 @@
 using Fishzor.Client.Services;
-using Fishzor.Client.State;
+using Fishzor.Client;
 using Fishzor.Components;
 using Fishzor.Hubs;
 using Fishzor.Services;
@@ -37,7 +37,7 @@ public static class WebApplicationExtensions
         builder.Services
             .AddSingleton<FishService>()
             .AddSingleton<HtmlSanitizer>()
-            .AddScoped<FishTankState>()
+            .AddScoped<FishTankClient>()
             .AddScoped<MessageDispatcher>()
             .AddResponseCompression(options =>
             {

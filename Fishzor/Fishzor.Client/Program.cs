@@ -1,5 +1,5 @@
 using Fishzor.Client.Services;
-using Fishzor.Client.State;
+using Fishzor.Client;
 using Ganss.Xss;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Logging.Configuration;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Configuration;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services
-    .AddScoped<FishTankState>()
+    .AddScoped<FishTankClient>()
     .AddScoped<MessageDispatcher>()
     .AddSingleton<HtmlSanitizer>()
     .AddSingleton<Animator>();
@@ -24,9 +24,9 @@ var logger = host.Services
     .CreateLogger<Program>();
 
 var baseAddress = builder.HostEnvironment.IsDevelopment() ? "https://localhost:7233/" : builder.HostEnvironment.BaseAddress;
-var fishTankState = host.Services.GetRequiredService<FishTankState>();
+var fishTankClient = host.Services.GetRequiredService<FishTankClient>();
 
-await fishTankState.InitializeAsync($"{baseAddress}fishhub");
+await fishTankClient.InitializeAsync($"{baseAddress}fishhub");
 
 await host.RunAsync();
 
