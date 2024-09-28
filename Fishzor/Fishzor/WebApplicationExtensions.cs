@@ -103,7 +103,17 @@ public static class WebApplicationExtensions
            .AddInteractiveWebAssemblyRenderMode()
            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
 
-        app.MapHub<FishHub>("/fishhub");
+        app.MapHub<FishHub>("/fishhub").AddEndpointFilter(async (context, next) =>
+        {
+            var apiKey = context.HttpContext.Request.Headers["x-api-key"].FirstOrDefault();
+            if (apiKey != "your-secret-apwi-key") // Use the same key as in ApiKeyAttribute
+            {
+                throw new UnauthorizedAccessException("Invalid API key");
+                return Results.Unauthorized();
+            }
+            return await next(context);
+        });
+
         app.MapControllers();
         app.MapHealthChecks("/health");
 

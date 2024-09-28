@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Fishzor.Hubs;
 
+[ApiKey]
 public class FishHub(FishService fishService, HtmlSanitizer sanitizer, ILogger<FishHub> logger) : Hub
 {
     private readonly FishService _fishService = fishService;

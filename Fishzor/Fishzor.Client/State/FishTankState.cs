@@ -1,11 +1,14 @@
 using Fishzor.Client.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Components;
 
 namespace Fishzor.Client.State;
 
-public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
+public class FishTankState(NavigationManager navigationManager, ILogger<FishTankState> logger) : IAsyncDisposable
 {
     private HubConnection? _hubConnection;
+    private readonly NavigationManager _navigationManager = navigationManager;
+    private const string ApiKey = "your-secret-api-key"; // 
     private string _hubUrl = string.Empty;
     private IDisposable? _onSubscription;
     private readonly ILogger<FishTankState> _logger = logger;
@@ -29,7 +32,10 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
         try
         {
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(_hubUrl)
+                .WithUrl(_navigationManager.ToAbsoluteUri("/fishhub"), options =>
+                {
+                    options.Headers.Add("x-api-key", ApiKey);
+                })
                 .WithAutomaticReconnect()
                 .Build();
 
@@ -64,6 +70,7 @@ public class FishTankState(ILogger<FishTankState> logger) : IAsyncDisposable
 
             _hubConnection.Closed += error =>
             {
+                Console.WriteLine("Connection closed");
                 IsOfflineMode = false;
                 OnStateChanged?.Invoke();
                 return Task.CompletedTask;
