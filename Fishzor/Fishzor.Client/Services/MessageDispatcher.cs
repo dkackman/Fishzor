@@ -46,7 +46,7 @@ public class MessageDispatcher(FishTankClient fishTankClient, ILogger<MessageDis
                 break;
 
             case "about":
-                OnOpenUrlRequested?.Invoke("https://github.com/dkackman/ChatFish");
+                OnOpenUrlRequested?.Invoke("https://github.com/dkackman/Fishzor");
                 break;
 
             // Add more commands here as needed
