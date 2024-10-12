@@ -15,7 +15,7 @@ builder.Services
 // Configure logging
 builder.Logging
     .AddConfiguration(builder.Configuration.GetSection("Logging"))
-    .SetMinimumLevel(LogLevel.Trace);
+    .SetMinimumLevel(LogLevel.Warning);
 
 var host = builder.Build();
 

@@ -10,15 +10,12 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
     private IDisposable? _onReceiveFishStateSubscription;
     private IDisposable? _onReceiveMessageSubscription;
     private readonly ILogger<FishTankClient> _logger = logger;
-    private IDictionary<string, FishState> _fish = new Dictionary<string, FishState>();
-
+    private Dictionary<string, FishState> _fish = [];
+    public IReadOnlyCollection<FishState> Fish => _fish.Values;
     public string ClientConnectionId { get; private set; } = string.Empty;
-    public IReadOnlyCollection<FishState> Fish => (IReadOnlyCollection<FishState>)_fish.Values;
     public bool IsOfflineMode { get; set; } = false;
 
     public event Action? OnStateChanged;
-
-    private const int MessageDisplayDurationMS = 10000;
 
     public async Task InitializeAsync(string hubUrl)
     {
@@ -34,15 +31,17 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
                 .WithAutomaticReconnect()
                 .Build();
 
+            _onReceiveFishStateSubscription?.Dispose();
             _onReceiveFishStateSubscription = _hubConnection.On<IEnumerable<FishState>>("ReceiveFishState", fishStates =>
             {
                 _fish = fishStates.ToDictionary(f => f.Id);
                 OnStateChanged?.Invoke();
             });
 
-            _onReceiveMessageSubscription = _hubConnection.On<FishMessage>("ReceiveMessage", async (message) =>
+            _onReceiveMessageSubscription?.Dispose();
+            _onReceiveMessageSubscription = _hubConnection.On<FishMessage>("ReceiveMessage", (message) =>
             {
-                await DisplayMessageForFish(message.ClientId, message.Message);
+                DisplayMessageForFish(message.ClientId, message.Message);
                 OnMessageReceived?.Invoke(message);
                 OnStateChanged?.Invoke();
             });
@@ -117,21 +116,13 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
         }
     }
 
-    private async Task DisplayMessageForFish(string fishId, ChatMessage message)
+    private void DisplayMessageForFish(string fishId, ChatMessage message)
     {
         _logger.LogDebug("Received message from: {fishId}", fishId);
 
         if (_fish.TryGetValue(fishId, out var fish))
         {
             fish.CurrentMessage = message;
-            fish.IsMessageVisible = true;
-            OnStateChanged?.Invoke();
-
-            await Task.Delay(MessageDisplayDurationMS);
-
-            fish.CurrentMessage = new();
-            fish.IsMessageVisible = false;
-            OnStateChanged?.Invoke();
         }
     }
 }
