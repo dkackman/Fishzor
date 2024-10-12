@@ -54,8 +54,6 @@ public class FishHub(FishService fishService, HtmlSanitizer sanitizer, ILogger<F
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error broadcasting message from client {ConnectionId}", Context.ConnectionId);
-            // Optionally, you could notify the client of the error
-            // await Clients.Caller.SendAsync("ErrorOccurred", "An error occurred while sending your message.");
         }
     }
 }

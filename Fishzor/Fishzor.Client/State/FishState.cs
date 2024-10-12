@@ -3,7 +3,6 @@ using System.Timers;
 
 namespace Fishzor.Client.State;
 
-
 public class FishState : IDisposable
 {
     private const int MessageVisibilityDurationMS = 25000;
@@ -63,5 +62,9 @@ public class FishState : IDisposable
         }
     }
 
-    public void Dispose() => _messageTimer.Dispose();
+    public void Dispose()
+    {
+        _messageTimer.Elapsed -= OnMessageTimerElapsed;
+        _messageTimer.Dispose();
+    }
 }

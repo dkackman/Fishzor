@@ -52,7 +52,6 @@ public class MessageDispatcher(FishTankClient fishTankClient, ILogger<MessageDis
             // Add more commands here as needed
             default:
                 OnCommand?.Invoke(command);
-                _logger.LogDebug("Unknown command: {commandName}", command);
                 break;
         }
     }

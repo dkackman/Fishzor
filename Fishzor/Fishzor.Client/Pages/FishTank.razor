@@ -9,11 +9,11 @@
 @inject IJSRuntime JSRuntime
 
 <div class="fish-tank-container">
-    <div id="fishTank" aria-label="Fish tank with swimming fish and an octopus">
+    <div id="fishTank" aria-label="Fish tank with swimming fish">
         <PageTitle>Fishy fishy fish</PageTitle>
 
         <div aria-live="polite" class="visually-hidden">
-            There are currently @FishTankClient.Fish.Count fish in the tank, and one octopus.
+            There are currently @FishTankClient.Fish.Count fish in the tank.
         </div>
 
         @foreach (var fish in FishTankClient.Fish)
@@ -24,7 +24,6 @@
 
     <ChatInput />
 </div>
-<LLMSettingsDialog IsVisible="@IsSettingsDialogVisible" Position="TopLeft" />
 <FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="BottomRight" ShowCloseButton="false"
     ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
 <FloatingToast IsVisible="@(_toastMessage != null)" Position="TopRight" OnClose="@CloseToast"
@@ -108,8 +107,6 @@
     };
 </script>
 @code {
-    private bool IsSettingsDialogVisible = true;
-
     private Toast? _toastMessage = null;
     private DotNetObjectReference<FishTank>? _dotNetRef;
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -148,14 +145,7 @@
 
     private void HandleCommand(string command)
     {
-        switch (command)
-        {
-            case "llm":
-                IsSettingsDialogVisible = true;
-                break;
-            default:
-                break;
-        }
+        // insert command handling here
         StateHasChanged();
     }
 
