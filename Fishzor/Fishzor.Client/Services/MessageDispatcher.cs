@@ -1,11 +1,10 @@
 using Fishzor.Client.Components;
-using Fishzor.Client.State;
 
 namespace Fishzor.Client.Services;
 
-public class MessageDispatcher(FishTankClient fishTankState, ILogger<MessageDispatcher> logger)
+public class MessageDispatcher(FishTankClient fishTankClient, ILogger<MessageDispatcher> logger)
 {
-    private readonly FishTankClient _fishTankState = fishTankState;
+    private readonly FishTankClient _fishTankClient = fishTankClient;
     private readonly ILogger<MessageDispatcher> _logger = logger;
 
     public async Task DispatchMessageAsync(string message)
@@ -20,13 +19,14 @@ public class MessageDispatcher(FishTankClient fishTankState, ILogger<MessageDisp
             }
             else
             {
-                await _fishTankState.SendMessageAsync(chatMessage);
+                await _fishTankClient.SendMessageAsync(chatMessage);
             }
         }
     }
 
     public event Action<Toast>? OnToastRequested;
     public event Action<string>? OnOpenUrlRequested;
+    public event Action<string>? OnCommand;
 
     private void ProcessCommand(string command)
     {
@@ -46,11 +46,12 @@ public class MessageDispatcher(FishTankClient fishTankState, ILogger<MessageDisp
                 break;
 
             case "about":
-                OnOpenUrlRequested?.Invoke("https://github.com/dkackman/Fishzor");
+                OnOpenUrlRequested?.Invoke("https://github.com/dkackman/ChatFish");
                 break;
 
             // Add more commands here as needed
             default:
+                OnCommand?.Invoke(command);
                 _logger.LogDebug("Unknown command: {commandName}", command);
                 break;
         }
