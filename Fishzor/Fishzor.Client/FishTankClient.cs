@@ -63,7 +63,7 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
 
             _hubConnection.Closed += error =>
             {
-                IsOfflineMode = false;
+                IsOfflineMode = true;
                 OnStateChanged?.Invoke();
                 return Task.CompletedTask;
             };
@@ -83,10 +83,6 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
             {
                 ["offline1"] = new FishState { Id = ClientConnectionId, Color = FishColor.Orange, Scale = "1.0" },
             };
-        }
-        finally
-        {
-            OnStateChanged?.Invoke();
         }
     }
 
